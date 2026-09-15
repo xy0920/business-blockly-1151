@@ -2,9 +2,9 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "0.2.8-github-pages-ready";
-  const MODULE = "M1";
-  const PROJECT_NAME = "小店結帳助手";
+  const APP_VERSION = "0.2.8.1-intro-student";
+  const MODULE = "INTRO";
+  const PROJECT_NAME = "商業流程整合示範";
   const LEGACY_PROFILE_KEY = "businessBlockly.profile.v1";
   const PROFILE_REGISTRY_KEY = "businessBlockly.profileRegistry.v2";
   const ACTIVE_PROFILE_KEY = "businessBlockly.activeProfile.v2";
@@ -18,16 +18,16 @@
 
   const PROGRAM = {
     shop_show_welcome: {
-      message: "歡迎使用小店結帳助手",
-      python: 'print("歡迎使用小店結帳助手")'
+      message: "歡迎使用商業流程整合示範",
+      python: 'print("歡迎使用商業流程整合示範")'
     },
     shop_show_start: {
-      message: "開始結帳",
-      python: 'print("開始結帳")'
+      message: "開始處理",
+      python: 'print("開始處理")'
     },
     shop_show_done: {
-      message: "結帳完成",
-      python: 'print("結帳完成")'
+      message: "處理完成",
+      python: 'print("處理完成")'
     }
   };
 
@@ -544,6 +544,18 @@
   }
 
   function defineBlocks() {
+    Blockly.Blocks["flow_show_text"] = {
+      init: function() {
+        this.appendDummyInput()
+          .appendField("顯示")
+          .appendField(new Blockly.FieldTextInput("請輸入要顯示的文字"), "TEXT");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(214);
+        this.setTooltip("顯示一段可以自己修改的文字");
+      }
+    };
+
     Blockly.Blocks["shop_show_welcome"] = {
       init: function() {
         this.appendDummyInput()
@@ -562,7 +574,7 @@
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(214);
-        this.setTooltip("顯示開始結帳");
+        this.setTooltip("顯示開始處理");
       }
     };
 
@@ -573,7 +585,7 @@
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(214);
-        this.setTooltip("顯示結帳完成");
+        this.setTooltip("顯示處理完成");
       }
     };
   }
@@ -586,7 +598,19 @@
       contents: [
         {
           kind: "category",
-          name: "流程積木",
+          name: "前導｜操作練習",
+          colour: "#6B7A90",
+          contents: [
+            {
+              kind: "block",
+              type: "flow_show_text",
+              fields: { TEXT: "請輸入要顯示的文字" }
+            }
+          ]
+        },
+        {
+          kind: "category",
+          name: "M1｜流程與順序",
           colour: "#2F6FED",
           contents: [
             { kind: "block", type: "shop_show_welcome" },
@@ -681,7 +705,9 @@
         lines.push("# 另一串尚未連接的積木");
       }
       stack.forEach(block => {
-        if (PROGRAM[block.type]) {
+        if (block.type === "flow_show_text") {
+          lines.push(`print(${JSON.stringify(block.getFieldValue("TEXT") || "")})`);
+        } else if (PROGRAM[block.type]) {
           lines.push(PROGRAM[block.type].python);
         } else {
           lines.push(`# 未知積木：${block.type}`);
@@ -717,7 +743,7 @@
       setRunStatus(
         "warning",
         "還沒有積木",
-        "先從左側拖出 3 個積木，再把它們接起來。"
+        "先從「前導｜操作練習」拖出積木，再把它們接起來。"
       );
       return;
     }
@@ -726,13 +752,13 @@
       setRunStatus(
         "warning",
         "積木還沒有接成一串",
-        "請把 3 個積木上下連接，讓程式有明確的執行順序。"
+        "請把積木上下連接成一串，再按一次執行程式。"
       );
       return;
     }
 
     const stack = stacks[0];
-    if (!stack.every(block => PROGRAM[block.type])) {
+    if (!stack.every(block => block.type === "flow_show_text" || PROGRAM[block.type])) {
       setRunStatus("error", "出現無法執行的積木", "請清空工作區後再試一次。");
       return;
     }
@@ -746,7 +772,9 @@
     for (const block of stack) {
       try { block.select(); } catch (_) {}
       const li = document.createElement("li");
-      li.textContent = PROGRAM[block.type].message;
+      li.textContent = block.type === "flow_show_text"
+        ? (block.getFieldValue("TEXT") || "")
+        : PROGRAM[block.type].message;
       li.className = "executing";
       $("guiMessages").appendChild(li);
       await sleep(420);
@@ -754,28 +782,36 @@
     }
 
     const order = stack.map(b => b.type);
+    const introOnly = stack.every(b => b.type === "flow_show_text");
     const exactCorrect =
       order.length === CORRECT_ORDER.length &&
       order.every((value, i) => value === CORRECT_ORDER[i]);
 
-    if (exactCorrect) {
+    if (introOnly && order.length >= 3) {
       setRunStatus(
         "success",
-        "執行成功，順序正確！",
-        "你已經完成 M1：程式會依照積木連接的順序，由上往下執行。"
+        "前導練習完成！",
+        "你已經會拖積木、改文字、連接與執行。下一步才會正式進入 M1。"
+      );
+      markIntroComplete();
+    } else if (exactCorrect) {
+      setRunStatus(
+        "success",
+        "M1 流程執行成功！",
+        "程式會依照積木連接的順序，由上往下執行。"
       );
       markM1Complete();
     } else if (order.length < 3) {
       setRunStatus(
         "warning",
-        "程式可以執行，但積木還不完整",
-        `目前有 ${order.length} 個積木；任務需要 3 個。`
+        "程式可以執行，再多試幾個積木",
+        `目前有 ${order.length} 個積木；前導任務建議連接 3 個。`
       );
     } else {
       setRunStatus(
-        "warning",
-        "程式可以執行，但順序可以再調整",
-        "觀察 GUI 顯示的訊息順序，再把積木重新排列一次。"
+        "success",
+        "程式已執行",
+        "觀察顯示文字的先後順序，也可以繼續修改文字再執行一次。"
       );
     }
 
@@ -784,6 +820,16 @@
     $("runProgramBtn").disabled = false;
     $("guiRunBtn").disabled = false;
     scheduleAutosave(true);
+  }
+
+  function markIntroComplete() {
+    const key = getProgressKey();
+    if (!key) return;
+    const progress = safeParse(localStorage.getItem(key), {}) || {};
+    progress.INTRO = true;
+    progress.introCompletedAt = progress.introCompletedAt || isoNow();
+    localStorage.setItem(key, JSON.stringify(progress));
+    restoreProgress();
   }
 
   function markM1Complete() {
@@ -800,14 +846,23 @@
     const key = getProgressKey();
     if (!key) return;
     const progress = safeParse(localStorage.getItem(key), {}) || {};
+
+    if (progress.INTRO) {
+      $("moduleIntro").classList.add("complete");
+      $("introState").textContent = "✓ 已完成";
+      $("footerProgress").textContent = "進度：前導已完成 · 下一步 M1";
+    } else {
+      $("moduleIntro").classList.remove("complete");
+      $("introState").textContent = "進行中";
+      $("footerProgress").textContent = "進度：前導";
+    }
+
     if (progress.M1) {
       $("moduleM1").classList.add("complete");
       $("m1State").textContent = "✓ 已完成";
-      $("footerProgress").textContent = "進度：M1 已完成 / M6";
     } else {
       $("moduleM1").classList.remove("complete");
-      $("m1State").textContent = "進行中";
-      $("footerProgress").textContent = "進度：M1 / M6";
+      $("m1State").textContent = progress.INTRO ? "下一階段" : "下一階段";
     }
   }
 

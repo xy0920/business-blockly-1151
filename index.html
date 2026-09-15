@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>商業軟體 Blockly｜小店結帳助手 M1</title>
+  <title>商業軟體 Blockly｜前導 · 認識 Blockly</title>
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
         <span class="brand-mark">B</span>
         <div>
           <h1>商業軟體 Blockly</h1>
-          <p>小店結帳助手 · M1 流程與順序</p>
+          <p>前導 · 認識 Blockly</p>
         </div>
       </div>
 
@@ -31,7 +31,7 @@
         <div id="identityError" class="form-error" role="alert"></div>
 
         <button id="createIdentityBtn" class="btn btn-primary btn-wide">開始使用</button>
-        <p class="privacy-note">同一學號在這台電腦會沿用原本的 studentKey；自己的專案檔也能把 studentKey 帶到另一台電腦。本版尚未啟用雲端繳交。</p>
+        <p class="privacy-note">同一學號在這台電腦會沿用原本的 studentKey；自己的專案檔也能把 studentKey 帶到另一台電腦。正式繳交請使用「上傳作業」。</p>
       </section>
 
       <section id="returnIdentityPanel" class="hidden">
@@ -55,7 +55,7 @@
       <div class="brand-mark small">B</div>
       <div>
         <h1>商業軟體 Blockly</h1>
-        <p>小店結帳助手 · M1 流程與順序</p>
+        <p>前導 · 認識 Blockly</p>
       </div>
     </div>
 
@@ -79,10 +79,15 @@
     <aside class="progress-card card">
       <div class="card-title">學習進度</div>
       <div class="module-list">
-        <div id="moduleM1" class="module-row current">
+        <div id="moduleIntro" class="module-row current">
+          <span class="module-dot">導</span>
+          <div><strong>前導</strong><span>認識 Blockly</span></div>
+          <em id="introState">進行中</em>
+        </div>
+        <div id="moduleM1" class="module-row">
           <span class="module-dot">1</span>
           <div><strong>M1</strong><span>流程與順序</span></div>
-          <em id="m1State">進行中</em>
+          <em id="m1State">下一階段</em>
         </div>
         <div class="module-row locked">
           <span class="module-dot">2</span>
@@ -112,8 +117,8 @@
       </div>
 
       <div class="sidebar-tip">
-        <strong>這一關只學一件事：</strong>
-        <span>程式會依照積木連接的順序，由上往下執行。</span>
+        <strong>前導先熟悉操作：</strong>
+        <span>拖積木、改文字、連接、執行、儲存、開啟與上傳測試。</span>
       </div>
     </aside>
 
@@ -122,7 +127,7 @@
         <div class="section-head">
           <div>
             <div class="card-title">積木工作區</div>
-            <p>從左側「流程積木」拖出 3 個積木，接成一條完整流程。</p>
+            <p>先從「前導｜操作練習」拖出積木，修改文字，再把它們連起來。</p>
           </div>
           <div class="workspace-tools">
             <span id="workspaceHint" class="mini-status">0 個積木</span>
@@ -142,15 +147,15 @@
 
         <div class="mini-app">
           <div class="mini-app-titlebar">
-            <span>🏪 小店結帳助手 · M1 流程與順序</span>
+            <span>🧩 商業流程整合示範 · 前導</span>
             <span class="window-dots">● ● ●</span>
           </div>
           <div class="mini-app-body">
             <div class="mini-app-left">
               <div class="shop-illustration">🛒</div>
-              <h3>小店結帳助手</h3>
-              <p>按下按鈕，看看你排好的流程會怎麼執行。</p>
-              <button id="guiRunBtn" class="btn btn-primary gui-run">▶ 開始結帳</button>
+              <h3>商業流程整合示範</h3>
+              <p>修改顯示文字、連接積木，再看看流程會怎麼執行。</p>
+              <button id="guiRunBtn" class="btn btn-primary gui-run">▶ 執行流程</button>
             </div>
 
             <div class="message-panel">
@@ -169,14 +174,14 @@
 
     <aside class="right-column">
       <section class="task-card card">
-        <div class="card-title">任務說明</div>
-        <p class="task-lead">請用 3 個「顯示」積木，排出合理的結帳流程。</p>
+        <div class="card-title">前導任務</div>
+        <p class="task-lead">請用 3 個可修改文字的「顯示」積木，完成你的第一個流程。</p>
         <ol class="task-steps">
-          <li>拖出「歡迎使用小店結帳助手」</li>
-          <li>接上「開始結帳」</li>
-          <li>最後接上「結帳完成」</li>
+          <li>拖出 3 個「顯示」積木</li>
+          <li>把每個積木改成你想顯示的文字</li>
+          <li>把積木上下連接後，按「執行程式」</li>
         </ol>
-        <div class="tip-box">💡 先不用寫任何程式碼，只要注意「順序」和「連接」。</div>
+        <div class="tip-box">💡 這一堂先熟悉 Blockly 操作；M1 才會正式進入「流程與順序」。</div>
       </section>
 
       <section class="run-card card">
@@ -224,10 +229,10 @@
 
   <footer class="footerbar">
     <span id="autosaveStatus">自動暫存：等待身分確認</span>
-    <span>專案：小店結帳助手</span>
+    <span>專案：商業流程整合示範</span>
     <span id="footerIdentity">使用者：—</span>
     <span class="footer-spacer"></span>
-    <span id="footerProgress">進度：M1 / M6</span>
+    <span id="footerProgress">進度：前導</span>
   </footer>
 
   <script src="./vendor/blockly/blockly.min.js"></script>

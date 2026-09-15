@@ -1,0 +1,24 @@
+GitHub Pages 上線檔案
+====================
+
+請把「這個資料夾裡面的內容」放到 GitHub repository 的根目錄，
+不要只上傳 ZIP，也不要再多包一層資料夾。
+
+GitHub Pages 設定：
+Settings → Pages
+Source：Deploy from a branch
+Branch：main
+Folder：/(root)
+Save
+
+完成後網址通常為：
+https://你的GitHub帳號.github.io/Repository名稱/
+
+本包只保留學生端需要的靜態檔案：
+index.html
+css/
+js/
+vendor/
+.nojekyll
+
+Apps Script 後端程式與老師測試文件未放入公開版。

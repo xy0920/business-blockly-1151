@@ -1,0 +1,238 @@
+<!doctype html>
+<!-- GitHub Pages entry -->
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>商業軟體 Blockly｜小店結帳助手 M1</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div id="identityScreen" class="identity-screen" aria-modal="true" role="dialog">
+    <div class="identity-card">
+      <div class="identity-brand">
+        <span class="brand-mark">B</span>
+        <div>
+          <h1>商業軟體 Blockly</h1>
+          <p>小店結帳助手 · M1 流程與順序</p>
+        </div>
+      </div>
+
+      <section id="newIdentityPanel">
+        <div class="identity-heading">第一次使用</div>
+        <p class="identity-copy">先確認你的身分。這台電腦之後會記住你，專案檔也會帶上目前的學號與姓名。</p>
+
+        <label class="field-label" for="studentIdInput">學號</label>
+        <input id="studentIdInput" class="text-input" autocomplete="off" placeholder="例如：11301174">
+
+        <label class="field-label" for="studentNameInput">姓名</label>
+        <input id="studentNameInput" class="text-input" autocomplete="off" placeholder="請輸入姓名">
+
+        <div id="identityError" class="form-error" role="alert"></div>
+
+        <button id="createIdentityBtn" class="btn btn-primary btn-wide">開始使用</button>
+        <p class="privacy-note">同一學號在這台電腦會沿用原本的 studentKey；自己的專案檔也能把 studentKey 帶到另一台電腦。本版尚未啟用雲端繳交。</p>
+      </section>
+
+      <section id="returnIdentityPanel" class="hidden">
+        <div class="identity-heading">歡迎回來</div>
+        <div class="return-user">
+          <div class="avatar">👤</div>
+          <div>
+            <strong id="returnUserName">—</strong>
+            <span>這是你嗎？</span>
+          </div>
+        </div>
+        <button id="continueIdentityBtn" class="btn btn-primary btn-wide">是我，繼續使用</button>
+        <button id="switchIdentityBtn" class="btn btn-ghost btn-wide">不是我？切換使用者</button>
+        <p class="privacy-note">切換使用者只會更換目前身分，不會刪除前一位同學的 studentKey 或自動暫存。</p>
+      </section>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-title">
+      <div class="brand-mark small">B</div>
+      <div>
+        <h1>商業軟體 Blockly</h1>
+        <p>小店結帳助手 · M1 流程與順序</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <div id="currentIdentity" class="identity-chip">👤 尚未確認身分</div>
+      <button id="switchUserTopBtn" class="btn btn-ghost btn-small" title="保留目前 studentKey，只切換目前使用者">切換使用者</button>
+      <div class="font-control" title="調整整體與積木文字大小">
+        <button id="fontDownBtn" class="icon-btn" aria-label="縮小字體">A−</button>
+        <span id="fontScaleLabel">100%</span>
+        <button id="fontUpBtn" class="icon-btn" aria-label="放大字體">A＋</button>
+      </div>
+      <div id="offlineBadge" class="offline-badge">✓ 離線核心已就緒</div>
+      <button id="openProjectBtn" class="btn btn-light">📂 開啟專案</button>
+      <button id="saveProjectBtn" class="btn btn-primary">💾 儲存專案</button>
+      <button id="uploadProjectBtn" class="btn btn-success" disabled>📤 上傳作業</button>
+      <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="progress-card card">
+      <div class="card-title">學習進度</div>
+      <div class="module-list">
+        <div id="moduleM1" class="module-row current">
+          <span class="module-dot">1</span>
+          <div><strong>M1</strong><span>流程與順序</span></div>
+          <em id="m1State">進行中</em>
+        </div>
+        <div class="module-row locked">
+          <span class="module-dot">2</span>
+          <div><strong>M2</strong><span>資料與處理</span></div>
+          <em>尚未開放</em>
+        </div>
+        <div class="module-row locked">
+          <span class="module-dot">3</span>
+          <div><strong>M3</strong><span>條件與判斷</span></div>
+          <em>尚未開放</em>
+        </div>
+        <div class="module-row locked">
+          <span class="module-dot">4</span>
+          <div><strong>M4</strong><span>商業規則</span></div>
+          <em>尚未開放</em>
+        </div>
+        <div class="module-row locked">
+          <span class="module-dot">5</span>
+          <div><strong>M5</strong><span>重複處理</span></div>
+          <em>尚未開放</em>
+        </div>
+        <div class="module-row locked">
+          <span class="module-dot">6</span>
+          <div><strong>M6</strong><span>整合成果</span></div>
+          <em>尚未開放</em>
+        </div>
+      </div>
+
+      <div class="sidebar-tip">
+        <strong>這一關只學一件事：</strong>
+        <span>程式會依照積木連接的順序，由上往下執行。</span>
+      </div>
+    </aside>
+
+    <section class="center-column">
+      <section class="workspace-card card">
+        <div class="section-head">
+          <div>
+            <div class="card-title">積木工作區</div>
+            <p>從左側「流程積木」拖出 3 個積木，接成一條完整流程。</p>
+          </div>
+          <div class="workspace-tools">
+            <span id="workspaceHint" class="mini-status">0 個積木</span>
+            <button id="resetWorkspaceBtn" class="btn btn-ghost btn-small">↺ 清空重做</button>
+          </div>
+        </div>
+        <div id="blocklyDiv" class="blockly-host"></div>
+      </section>
+
+      <section class="gui-card card">
+        <div class="section-head">
+          <div>
+            <div class="card-title">GUI 模擬畫面</div>
+            <p>這是程式執行後的實際畫面，會依照上方積木更新。</p>
+          </div>
+        </div>
+
+        <div class="mini-app">
+          <div class="mini-app-titlebar">
+            <span>🏪 小店結帳助手 · M1 流程與順序</span>
+            <span class="window-dots">● ● ●</span>
+          </div>
+          <div class="mini-app-body">
+            <div class="mini-app-left">
+              <div class="shop-illustration">🛒</div>
+              <h3>小店結帳助手</h3>
+              <p>按下按鈕，看看你排好的流程會怎麼執行。</p>
+              <button id="guiRunBtn" class="btn btn-primary gui-run">▶ 開始結帳</button>
+            </div>
+
+            <div class="message-panel">
+              <div class="message-panel-head">
+                <strong>訊息顯示區</strong>
+                <button id="clearMessagesBtn" class="text-btn">清除訊息</button>
+              </div>
+              <ol id="guiMessages" class="message-list">
+                <li class="placeholder">等待執行你的程式…</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="right-column">
+      <section class="task-card card">
+        <div class="card-title">任務說明</div>
+        <p class="task-lead">請用 3 個「顯示」積木，排出合理的結帳流程。</p>
+        <ol class="task-steps">
+          <li>拖出「歡迎使用小店結帳助手」</li>
+          <li>接上「開始結帳」</li>
+          <li>最後接上「結帳完成」</li>
+        </ol>
+        <div class="tip-box">💡 先不用寫任何程式碼，只要注意「順序」和「連接」。</div>
+      </section>
+
+      <section class="run-card card">
+        <div class="card-title">執行結果</div>
+        <div id="runStatus" class="run-status neutral">
+          <span class="status-dot"></span>
+          <div>
+            <strong>尚未執行</strong>
+            <p>把積木接好後，按下執行程式。</p>
+          </div>
+        </div>
+        <button id="runProgramBtn" class="btn btn-primary btn-wide">▶ 執行程式</button>
+      </section>
+
+
+      <section class="cloud-card card">
+        <div class="cloud-head">
+          <div class="card-title">雲端作業</div>
+          <span id="cloudConfigBadge" class="cloud-badge pending">尚未設定</span>
+        </div>
+        <div id="cloudStatus" class="cloud-status neutral">
+          <span class="status-dot"></span>
+          <div>
+            <strong>尚未連接後端</strong>
+            <p>測試版先設定 Apps Script Web App，再使用「上傳作業」。</p>
+          </div>
+        </div>
+        <button id="cloudSetupBtn" class="btn btn-ghost btn-wide">⚙ 設定上傳後端</button>
+        <p class="cloud-note">正式發給學生前，會把後端網址固定在設定檔，不需要學生自己設定。</p>
+      </section>
+
+      <section class="python-card card">
+        <div class="python-head">
+          <div class="card-title">Python 對照</div>
+          <span class="code-badge">只要看懂</span>
+        </div>
+        <pre id="pythonCode" class="python-code"><code># 把積木拖到工作區後
+# 這裡會出現對應的 Python</code></pre>
+        <p class="python-note">現在不需要寫語法，只要觀察積木與程式碼的對應。</p>
+      </section>
+
+      <section id="projectNotice" class="project-notice card hidden"></section>
+    </aside>
+  </main>
+
+  <footer class="footerbar">
+    <span id="autosaveStatus">自動暫存：等待身分確認</span>
+    <span>專案：小店結帳助手</span>
+    <span id="footerIdentity">使用者：—</span>
+    <span class="footer-spacer"></span>
+    <span id="footerProgress">進度：M1 / M6</span>
+  </footer>
+
+  <script src="./vendor/blockly/blockly.min.js"></script>
+  <script src="./vendor/blockly/msg/zh-hant.js"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

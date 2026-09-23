@@ -671,3 +671,921 @@ button { cursor: pointer; }
   0%, 100% { opacity: .35; transform: scale(.85); }
   50% { opacity: 1; transform: scale(1.1); }
 }
+
+
+/* v0.3.0 Final Golden Prototype */
+.final-progress-list .module-row { padding-top: 7px; padding-bottom: 7px; margin-bottom: 3px; }
+.final-progress-list .module-row .module-dot { width: 25px; height: 25px; }
+.final-row { margin-top: 7px; border: 1px solid #c9d9ff; }
+.workspace-card .blockly-host { height: 650px; min-height: 560px; }
+.final-app { margin-bottom: 2px; }
+.final-app-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .7fr); min-height: 430px; }
+.final-input-panel { padding: 18px; border-right: 1px solid #e5ebf4; min-width: 0; }
+.final-message-panel { padding: 18px; min-width: 0; background: #fbfcff; }
+.final-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid #edf1f6; }
+.final-panel-head strong { display: block; font-size: 1rem; }
+.final-panel-head span { display: block; margin-top: 3px; color: var(--muted); font-size: .72rem; line-height: 1.45; }
+.skin-settings { display: grid; grid-template-columns: minmax(220px,1fr) auto; gap: 12px; align-items: end; padding: 14px 0; }
+.skin-settings label { color: #53627c; font-size: .72rem; font-weight: 800; }
+.text-input.compact { margin-top: 5px; min-height: 36px; padding: 7px 10px; }
+.eligibility-toggle { min-height: 36px; padding: 7px 11px; display: flex; gap: 7px; align-items: center; border: 1px solid var(--border); border-radius: 9px; background: #f9fbff; white-space: nowrap; }
+.data-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 0 9px; }
+.data-toolbar strong { font-size: .79rem; }
+.data-toolbar > div { display: flex; gap: 6px; }
+.data-table-wrap { overflow-x: auto; border: 1px solid #e1e8f2; border-radius: 10px; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 610px; font-size: .72rem; }
+.data-table th { background: #f6f8fc; color: #61708a; text-align: left; padding: 8px; border-bottom: 1px solid #e1e8f2; }
+.data-table td { padding: 6px 7px; border-bottom: 1px solid #edf1f6; vertical-align: middle; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.grid-input { width: 100%; min-width: 80px; border: 1px solid #dce4ef; border-radius: 7px; padding: 6px 7px; background: #fff; color: var(--text); }
+.record-name { min-width: 115px; }
+.record-number { width: 82px; min-width: 70px; }
+.subtotal-cell { font-weight: 800; color: #31517c; }
+.record-state { min-width: 78px; color: #7d899d; font-weight: 700; }
+.record-state.ok { color: var(--success); }
+.record-state.bad { color: var(--danger); }
+.row-delete { border: 0; background: transparent; color: #a0a9b8; font-size: 1.1rem; font-weight: 800; }
+.row-delete:hover { color: var(--danger); }
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 13px; }
+.summary-grid > div { border: 1px solid #e1e8f2; border-radius: 10px; padding: 9px 10px; background: #fff; }
+.summary-grid span { display: block; color: #75829a; font-size: .64rem; margin-bottom: 3px; }
+.summary-grid strong { font-size: 1rem; }
+.summary-grid .primary-summary { border-color: #bdd0fb; background: #f0f5ff; color: #245fd1; }
+.rule-result { margin-top: 9px; border-radius: 8px; padding: 8px 10px; font-size: .7rem; font-weight: 700; }
+.rule-result.neutral { background: #f5f7fa; color: #728099; }
+.rule-result.success { background: var(--success-bg); color: #147746; }
+.final-message-list { max-height: 355px; overflow-y: auto; padding-right: 4px; }
+.capability-list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 12px; }
+.capability-list span { display: block; padding: 8px 9px; border-radius: 8px; background: #f7f9fc; color: #526078; font-size: .72rem; line-height: 1.35; }
+.capability-list b { display: inline-block; min-width: 28px; color: #245fd1; }
+.final-check-card .task-lead { margin-bottom: 7px; }
+@media (max-width: 1350px) {
+  .final-app-body { grid-template-columns: 1fr; }
+  .final-input-panel { border-right: 0; border-bottom: 1px solid #e5ebf4; }
+  .final-message-list { max-height: 220px; }
+}
+
+
+/* =========================================================
+   v0.3.2 Layout Focus
+   Blockly + movable Python + right-side GUI + persistent toolbox
+   ========================================================= */
+
+.layout {
+  grid-template-columns: 190px minmax(720px, 1fr) 450px;
+  gap: 14px;
+}
+
+.workspace-stage {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+.workspace-stage .blockly-host {
+  height: 650px;
+  min-height: 580px;
+  border-top: 0;
+}
+
+/* Python sits directly on the Blockly canvas and can be dragged. */
+.python-float {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: min(370px, 43%);
+  max-height: 590px;
+  z-index: 30;
+  padding: 0;
+  border: 1px solid #c9d6ea;
+  border-radius: 12px;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 14px 34px rgba(32,54,92,.18);
+  overflow: hidden;
+}
+
+.python-float-head {
+  min-height: 42px;
+  padding: 9px 10px 9px 12px;
+  background: #f2f6ff;
+  border-bottom: 1px solid #dce5f2;
+  cursor: move;
+  user-select: none;
+}
+
+.python-float-head .code-badge {
+  margin-left: auto;
+}
+
+.python-float-controls {
+  display: flex;
+  gap: 5px;
+  margin-left: 7px;
+}
+
+.python-float-btn {
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid #d4deec;
+  border-radius: 7px;
+  background: #fff;
+  color: #4d5f7d;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.python-float-btn:hover {
+  background: #eaf1ff;
+}
+
+.python-float .python-code {
+  margin: 10px;
+  min-height: 150px;
+  max-height: 430px;
+  border-radius: 8px;
+  font-size: .72rem;
+}
+
+.python-float .python-note {
+  padding: 0 11px 11px;
+}
+
+.python-float.is-collapsed {
+  width: 260px;
+}
+
+.python-float.is-collapsed .python-code,
+.python-float.is-collapsed .python-note {
+  display: none;
+}
+
+.python-float.is-collapsed .python-float-head {
+  border-bottom: 0;
+}
+
+/* GUI now lives at the top-right, next to the Blockly workbench. */
+.right-column > .gui-card {
+  order: -10;
+}
+
+.right-column .gui-card {
+  padding-bottom: 10px;
+}
+
+.right-column .gui-card .section-head {
+  min-height: 50px;
+  padding: 12px 13px 8px;
+}
+
+.right-column .gui-card .section-head p {
+  font-size: .7rem;
+}
+
+.right-column .mini-app {
+  margin: 0 10px;
+}
+
+.right-column .mini-app-titlebar {
+  min-height: 36px;
+  padding: 8px 10px;
+}
+
+.right-column .final-app-body {
+  display: block;
+  min-height: 0;
+}
+
+.right-column .final-input-panel {
+  padding: 12px;
+  border-right: 0;
+  border-bottom: 1px solid #e5ebf4;
+}
+
+.right-column .final-message-panel {
+  padding: 12px;
+  background: #fbfcff;
+}
+
+.right-column .final-panel-head {
+  gap: 8px;
+  padding-bottom: 10px;
+}
+
+.right-column .final-panel-head strong {
+  font-size: .9rem;
+}
+
+.right-column .final-panel-head span {
+  font-size: .66rem;
+}
+
+.right-column .final-panel-head .btn {
+  min-height: 32px;
+  padding: 5px 9px;
+  font-size: .7rem;
+  white-space: nowrap;
+}
+
+.right-column .skin-settings {
+  grid-template-columns: 1fr;
+  gap: 7px;
+  padding: 10px 0;
+}
+
+.right-column .eligibility-toggle {
+  width: max-content;
+}
+
+.right-column .data-toolbar {
+  align-items: flex-start;
+  margin-top: 0;
+}
+
+.right-column .data-toolbar > div {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.right-column .data-table-wrap {
+  max-height: 180px;
+  overflow: auto;
+}
+
+.right-column .data-table {
+  min-width: 410px;
+  font-size: .66rem;
+}
+
+.right-column .data-table th {
+  padding: 6px;
+}
+
+.right-column .data-table td {
+  padding: 5px;
+}
+
+.right-column .grid-input {
+  min-width: 52px;
+  padding: 5px 6px;
+}
+
+.right-column .summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.right-column .summary-grid > div {
+  min-height: 58px;
+  padding: 9px;
+}
+
+.right-column .summary-grid span {
+  font-size: .64rem;
+}
+
+.right-column .summary-grid strong {
+  font-size: 1rem;
+}
+
+.right-column .rule-result {
+  margin-top: 8px;
+  padding: 8px 10px;
+  font-size: .68rem;
+}
+
+.right-column .final-message-list {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* Keep category toolbox visible; the flyout is controlled in JS. */
+.blocklyToolboxDiv {
+  transition: width .18s ease, opacity .18s ease;
+}
+
+#toggleToolboxBtn {
+  white-space: nowrap;
+}
+
+/* Better use of medium desktop screens. */
+@media (max-width: 1450px) {
+  .layout {
+    grid-template-columns: 180px minmax(650px, 1fr) 400px;
+  }
+
+  .python-float {
+    width: min(335px, 44%);
+  }
+}
+
+@media (max-width: 1180px) {
+  .layout {
+    grid-template-columns: 170px minmax(600px, 1fr) 360px;
+  }
+
+  .python-float {
+    width: 315px;
+  }
+
+  .right-column .data-table {
+    min-width: 390px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .python-float {
+    width: min(360px, 46%);
+  }
+
+  .right-column .gui-card {
+    order: 0;
+  }
+}
+
+
+/* =========================================================
+   v0.3.3 Layout Refine
+   - fixed Blockly stage
+   - second-level flyout collapse only
+   - draggable flow messages
+   - collapsible GUI
+   ========================================================= */
+
+.layout {
+  grid-template-columns: 190px minmax(700px, 1fr) 330px;
+}
+
+body.gui-expanded .layout {
+  grid-template-columns: 190px minmax(700px, 1fr) 440px;
+}
+
+/* Blockly workbench: fixed teaching size, not oversized on first open. */
+.workspace-stage {
+  height: 560px;
+  min-height: 560px;
+  max-height: 560px;
+}
+
+.workspace-stage .blockly-host {
+  height: 560px;
+  min-height: 560px;
+  max-height: 560px;
+}
+
+/* First-level categories stay visible.
+   v0.3.5: second-level flyout visibility is controlled by Blockly API,
+   so Blockly can reclaim the actual workspace width when it is closed. */
+#toggleFlyoutBtn {
+  white-space: nowrap;
+}
+
+/* Flow messages become a floating teaching panel on the Blockly canvas. */
+.message-float {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: min(340px, 40%);
+  max-height: 230px;
+  z-index: 31;
+  background: rgba(255,255,255,.98);
+  border: 1px solid #cfd9e8;
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(32,54,92,.16);
+  overflow: hidden;
+}
+
+.message-float-head {
+  min-height: 40px;
+  padding: 8px 9px 8px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e1e7f0;
+  cursor: move;
+  user-select: none;
+}
+
+.message-float-controls {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.message-float-btn {
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid #d4deec;
+  border-radius: 7px;
+  background: #fff;
+  color: #4d5f7d;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.message-float-btn:hover {
+  background: #eef3fb;
+}
+
+.message-float-clear {
+  border: 0;
+  background: transparent;
+  color: #2f66d3;
+  font-size: .72rem;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px 5px;
+}
+
+.message-float .final-message-list {
+  margin: 0;
+  padding: 10px 14px 12px 32px;
+  max-height: 174px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.message-float.is-collapsed {
+  width: 250px;
+  max-height: 44px;
+}
+
+.message-float.is-collapsed .final-message-list {
+  display: none;
+}
+
+.message-float.is-collapsed .message-float-head {
+  border-bottom: 0;
+}
+
+/* GUI is a right-side drawer-like card. Default: collapsed. */
+.gui-card {
+  transition: box-shadow .18s ease;
+}
+
+.gui-card.is-collapsed .mini-app {
+  display: none;
+}
+
+.gui-card.gui-locked .mini-app {
+  display: none;
+}
+
+.gui-locked-message {
+  display: flex;
+  min-height: 132px;
+  padding: 22px 18px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #f7f9fc;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.gui-locked-message strong {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.gui-card.is-collapsed .gui-locked-message {
+  display: none;
+}
+
+.gui-card.is-collapsed .section-head {
+  min-height: 58px;
+  padding-bottom: 12px;
+}
+
+.gui-card .section-head {
+  align-items: center;
+}
+
+#guiToggleBtn {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+body:not(.gui-expanded) .right-column .gui-card .section-head p {
+  display: none;
+}
+
+body.gui-expanded .right-column .gui-card {
+  box-shadow: 0 10px 28px rgba(32,54,92,.10);
+}
+
+/* Once flow messages move out, GUI only needs the functional screen. */
+.right-column .final-app-body {
+  display: block;
+}
+
+.right-column .final-input-panel {
+  border-bottom: 0;
+}
+
+@media (max-width: 1400px) {
+  .layout {
+    grid-template-columns: 180px minmax(640px, 1fr) 310px;
+  }
+
+  body.gui-expanded .layout {
+    grid-template-columns: 180px minmax(640px, 1fr) 400px;
+  }
+}
+
+@media (max-width: 1120px) {
+  .layout,
+  body.gui-expanded .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-stage,
+  .workspace-stage .blockly-host {
+    height: 540px;
+    min-height: 540px;
+    max-height: 540px;
+  }
+
+  .message-float {
+    width: 320px;
+  }
+}
+
+
+/* =========================================================
+   v0.3.4 Flowchart Prototype
+   Blockly -> auto-generated teaching flowchart
+   ========================================================= */
+
+.flowchart-float {
+  position: absolute;
+  left: 250px;
+  top: 54px;
+  width: min(420px, 46%);
+  max-height: 490px;
+  z-index: 33;
+  background: rgba(255,255,255,.985);
+  border: 1px solid #cbd7e8;
+  border-radius: 12px;
+  box-shadow: 0 16px 38px rgba(32,54,92,.18);
+  overflow: hidden;
+}
+
+.flowchart-float.is-hidden {
+  display: none;
+}
+
+.flowchart-float-head {
+  min-height: 42px;
+  padding: 8px 9px 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f8f5;
+  border-bottom: 1px solid #dbe8df;
+  cursor: move;
+  user-select: none;
+}
+
+.flowchart-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.flowchart-badge {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e9f7ef;
+  color: #27784e;
+  font-size: .64rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.flowchart-float-controls {
+  margin-left: auto;
+  display: flex;
+  gap: 5px;
+}
+
+.flowchart-float-btn {
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid #d4deec;
+  border-radius: 7px;
+  background: #fff;
+  color: #4d5f7d;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.flowchart-float-btn:hover {
+  background: #edf5ef;
+}
+
+.flowchart-body {
+  background: #fff;
+}
+
+.flowchart-meta {
+  padding: 8px 11px 6px;
+  color: #66758d;
+  font-size: .68rem;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.flowchart-scroll {
+  position: relative;
+  height: 350px;
+  overflow: auto;
+  background:
+    linear-gradient(#fafcfe 1px, transparent 1px),
+    linear-gradient(90deg, #fafcfe 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+#flowchartSvg {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  min-height: 330px;
+  background: transparent;
+}
+
+.flowchart-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 30px;
+  text-align: center;
+  color: #8a96aa;
+  font-size: .76rem;
+}
+
+.flowchart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  padding: 7px 10px;
+  border-top: 1px solid #eef2f6;
+  color: #6b7890;
+  font-size: .62rem;
+  background: #fbfcfe;
+}
+
+.flowchart-note {
+  margin: 0;
+  padding: 8px 11px 10px;
+  color: #697890;
+  font-size: .66rem;
+  line-height: 1.5;
+  background: #f8fbf9;
+  border-top: 1px solid #e4eee7;
+}
+
+.flowchart-float.is-collapsed {
+  width: 290px;
+  max-height: 44px;
+}
+
+.flowchart-float.is-collapsed .flowchart-body,
+.flowchart-float.is-collapsed .flowchart-note {
+  display: none;
+}
+
+.flowchart-float.is-collapsed .flowchart-float-head {
+  border-bottom: 0;
+}
+
+#toggleFlowchartBtn.is-active {
+  background: #eaf7ef;
+  border-color: #bcdcc8;
+  color: #24734a;
+}
+
+@media (max-width: 1250px) {
+  .flowchart-float {
+    left: 210px;
+    width: 400px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .flowchart-float {
+    left: 120px;
+    width: min(400px, 70%);
+  }
+}
+
+
+/* =========================================================
+   v0.3.5 Workspace reclaim
+   The flyout is no longer hidden by CSS only.
+   Blockly's own flyout state controls workspace metrics.
+   ========================================================= */
+
+.right-column {
+  align-content: start;
+}
+
+
+
+/* =========================================================
+   v0.3.6 M1 Student Publish Layout
+   ========================================================= */
+
+.student-publish-hidden {
+  display: none !important;
+}
+
+/* Give the main Blockly canvas the space that was previously wasted below. */
+.layout {
+  grid-template-columns: 190px minmax(760px, 1fr) 310px;
+  gap: 14px;
+  padding-bottom: 46px;
+}
+
+body.gui-expanded .layout {
+  grid-template-columns: 190px minmax(720px, 1fr) 430px;
+}
+
+.workspace-stage,
+.workspace-stage .blockly-host {
+  height: calc(100vh - 190px);
+  min-height: 650px;
+  max-height: 820px;
+}
+
+.workspace-stage {
+  overflow: hidden;
+}
+
+/* Larger default UI for classroom projection. */
+.module-row strong { font-size: .86rem; }
+.module-row span { font-size: .78rem; line-height: 1.35; }
+.module-row em { font-size: .70rem; }
+.sidebar-tip strong { font-size: .82rem; }
+.sidebar-tip span { font-size: .77rem; }
+.section-head p { font-size: .84rem; line-height: 1.45; }
+.btn-small { font-size: .82rem; }
+.mini-status { font-size: .78rem; }
+.blocklyTreeLabel { font-size: 16px !important; }
+.run-status strong { font-size: .88rem; }
+.run-status p { font-size: .78rem; }
+.card-title { font-size: 1rem; }
+
+/* Python: same interaction model as flowchart: hidden until requested. */
+.python-float.is-hidden {
+  display: none;
+}
+
+#togglePythonBtn.is-active {
+  background: #eef3ff;
+  border-color: #c8d6f2;
+  color: #315fac;
+}
+
+.python-float {
+  width: min(410px, 44%);
+  max-height: 620px;
+}
+
+.python-float .python-code {
+  font-size: .82rem;
+  line-height: 1.55;
+}
+
+.python-float .python-note {
+  font-size: .76rem;
+  line-height: 1.55;
+}
+
+/* Flow messages belong to the execution result area, not on the canvas. */
+.run-message-panel {
+  margin-top: 12px;
+  border-top: 1px solid #e3e9f2;
+  padding-top: 10px;
+}
+
+.run-message-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.run-message-head strong {
+  font-size: .86rem;
+}
+
+.message-clear-btn {
+  border: 0;
+  background: transparent;
+  color: #2f66d3;
+  font-size: .76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.run-message-list {
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 8px 8px 8px 28px;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #42526b;
+  font-size: .82rem;
+  line-height: 1.55;
+}
+
+/* Flowchart: larger panel and much more legible classroom text. */
+.flowchart-float {
+  left: 220px;
+  top: 48px;
+  width: min(560px, 58%);
+  max-height: 650px;
+}
+
+.flowchart-float-head {
+  min-height: 46px;
+  padding: 10px 11px 10px 14px;
+}
+
+.flowchart-badge {
+  font-size: .72rem;
+}
+
+.flowchart-meta {
+  font-size: .78rem;
+  padding: 9px 12px 7px;
+}
+
+.flowchart-scroll {
+  height: 445px;
+}
+
+#flowchartSvg {
+  min-width: 840px;
+  min-height: 420px;
+}
+
+.flowchart-legend {
+  gap: 7px 14px;
+  padding: 9px 12px;
+  font-size: .72rem;
+}
+
+.flowchart-note {
+  padding: 9px 12px 11px;
+  font-size: .75rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 1450px) {
+  .layout {
+    grid-template-columns: 180px minmax(680px, 1fr) 295px;
+  }
+
+  body.gui-expanded .layout {
+    grid-template-columns: 180px minmax(650px, 1fr) 390px;
+  }
+
+  .flowchart-float {
+    left: 185px;
+    width: min(520px, 58%);
+  }
+}
+
+@media (max-width: 1120px) {
+  .layout,
+  body.gui-expanded .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-stage,
+  .workspace-stage .blockly-host {
+    height: 650px;
+    min-height: 650px;
+    max-height: 650px;
+  }
+
+  .flowchart-float {
+    left: 80px;
+    width: min(520px, 72%);
+  }
+}

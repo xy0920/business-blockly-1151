@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>商業軟體 Blockly｜M1 流程與順序</title>
+<title>商業軟體 Blockly｜M2 資料與處理</title>
 <link href="./css/style.css" rel="stylesheet"/>
 </head>
 <body>
@@ -15,7 +15,7 @@
 <span class="brand-mark">B</span>
 <div>
 <h1>商業軟體 Blockly</h1>
-<p>M1 · 流程與順序</p>
+<p data-module-context>M2 · 資料與處理</p>
 </div>
 </div>
 <section id="newIdentityPanel">
@@ -49,7 +49,7 @@
 <div class="brand-mark small">B</div>
 <div>
 <h1>商業軟體 Blockly</h1>
-<p>M1 · 流程與順序</p>
+<p data-module-context>M2 · 資料與處理</p>
 </div>
 </div>
 <div class="topbar-actions">
@@ -75,8 +75,8 @@
 <span class="module-dot">導</span>
 <div><strong>前導</strong><span>認識 Blockly</span></div><em>✓ 已完成</em>
 </div>
-<div class="module-row current" id="moduleM1"><span class="module-dot">1</span><div><strong>M1</strong><span>流程與順序</span></div><em id="m1State">進行中</em></div>
-<div class="module-row locked"><span class="module-dot">2</span><div><strong>M2</strong><span>資料與處理</span></div><em>尚未開放</em></div>
+<div aria-selected="false" class="module-row module-tab complete" id="moduleM1" role="tab" tabindex="0"><span class="module-dot">1</span><div><strong>M1</strong><span>流程與順序</span></div><em id="m1State">✓ 已完成</em></div>
+<div aria-selected="true" class="module-row module-tab current" id="moduleM2" role="tab" tabindex="0"><span class="module-dot">2</span><div><strong>M2</strong><span>資料與處理</span></div><em id="m2State">進行中</em></div>
 <div class="module-row locked"><span class="module-dot">3</span><div><strong>M3</strong><span>條件與判斷</span></div><em>尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">4</span><div><strong>M4</strong><span>商業規則</span></div><em>尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">5</span><div><strong>M5</strong><span>重複處理</span></div><em>尚未開放</em></div>
@@ -84,11 +84,15 @@
 
 </div>
 <div class="sidebar-tip">
-<strong>M1 本階段重點</strong>
-<span>用「顯示」積木練習循序；需要時開啟 Python 或流程圖做對照。</span>
+<strong id="moduleTipTitle">M2 本階段重點</strong>
+<span id="moduleTipText">處理一筆會員購物交易：先設定商品與會員資料，再完成結帳、庫存與會員點數的資料運算。</span>
 </div>
 </aside>
 <section class="center-column">
+<nav aria-label="Module 切換" class="workspace-module-tabs" role="tablist">
+<button aria-selected="false" class="workspace-module-tab" id="moduleTabM1" role="tab" type="button"><strong>M1</strong><span>流程與順序</span></button>
+<button aria-selected="true" class="workspace-module-tab active" id="moduleTabM2" role="tab" type="button"><strong>M2</strong><span>資料與處理</span></button>
+</nav>
 <section class="workspace-card card">
 <div class="section-head">
 <div>
@@ -107,7 +111,7 @@
 <div class="python-float-controls"><button class="python-float-btn" id="pythonResetPositionBtn" title="還原 Python 視窗位置" type="button">↺</button><button class="python-float-btn" id="pythonCollapseBtn" title="收起 Python 對照" type="button">—</button><button class="python-float-btn" id="pythonCloseBtn" title="關閉 Python 對照" type="button">×</button></div></div>
 <pre class="python-code" id="pythonCode"><code># 把積木拖到工作區後
 # 這裡會出現對應的 Python</code></pre>
-<p class="python-note">M1 不要求寫 Python；這裡只用來對照「顯示」積木與 print 的關係。</p>
+<p class="python-note" id="pythonModuleNote">M2 不要求寫 Python；這裡用來觀察變數、指定、運算與 print 的對應關係。</p>
 </section><section class="flowchart-float is-hidden" id="flowchartFloat">
 <div class="flowchart-float-head" id="flowchartDragHandle">
 <div class="flowchart-title-group">
@@ -133,7 +137,7 @@
 <span>◇ 判斷／迴圈</span>
 </div>
 </div>
-<p class="flowchart-note">M1 先看「循序」：積木由上到下，流程圖也會依相同順序連接。</p>
+<p class="flowchart-note" id="flowchartModuleNote">M2 觀察資料怎麼一路被處理：設定商品與會員資料 → 結帳計算 → 庫存更新 → 點數累積 → 顯示結果。</p>
 </section></div>
 </section>
 </section>
@@ -145,21 +149,21 @@
 <button aria-expanded="false" class="btn btn-light btn-small" id="guiToggleBtn" type="button" disabled>暫不開放</button></div>
 <div class="mini-app final-app">
 <div class="mini-app-titlebar">
-<span id="guiWindowTitle">🧩 商業流程整合示範 · M1</span>
+<span id="guiWindowTitle">🧩 小店營運助手 · M2</span>
 <span class="window-dots">● ● ●</span>
 </div>
 <div class="final-app-body">
 <section class="final-input-panel">
 <div class="final-panel-head">
 <div>
-<strong id="guiProjectName">商業流程整合示範</strong>
+<strong id="guiProjectName">小店營運助手</strong>
 <span>情境名稱與顯示文字都可以修改，能力骨架不綁死案例。</span>
 </div>
-<button class="btn btn-primary" id="guiRunBtn">▶ 執行 M1</button>
+<button class="btn btn-primary" id="guiRunBtn">▶ 執行 M2</button>
 </div>
 <div class="skin-settings">
 <label>專案名稱
-                  <input class="text-input compact" id="projectTitleInput" value="商業流程整合示範"/>
+                  <input class="text-input compact" id="projectTitleInput" value="小店營運助手"/>
 </label>
 <label class="eligibility-toggle">
 <input checked="" id="eligibleInput" type="checkbox"/>
@@ -196,7 +200,7 @@
 <span class="status-dot"></span>
 <div>
 <strong>尚未執行</strong>
-<p>把 M1 的顯示積木接成一條流程後，按下執行程式。</p>
+<p>切換到不同 Module 會使用各自獨立畫布；完成目前 Module 的積木後再執行測試。</p>
 </div>
 </div>
 <button class="btn btn-primary btn-wide" id="runProgramBtn">▶ 執行程式</button><section class="run-message-panel" id="runMessagePanel">
@@ -228,10 +232,10 @@
 </main>
 <footer class="footerbar">
 <span id="autosaveStatus">自動暫存：等待身分確認</span>
-<span id="footerProject">專案：商業流程整合示範</span>
+<span id="footerProject">專案：小店營運助手</span>
 <span id="footerIdentity">使用者：—</span>
 <span class="footer-spacer"></span>
-<span id="footerProgress">進度：M1 · 流程與順序</span>
+<span id="footerProgress">進度：M2 · 資料與處理</span>
 </footer>
 <script src="./vendor/blockly/blockly.min.js"></script>
 <script src="./vendor/blockly/msg/zh-hant.js"></script>

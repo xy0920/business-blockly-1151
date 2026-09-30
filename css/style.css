@@ -1,7 +1,7 @@
 
 :root {
   --ui-scale: 1;
-  --block-font-size: 16px;
+  --block-font-size: 24px;
   --bg: #f4f7fb;
   --card: #ffffff;
   --text: #17233c;
@@ -288,19 +288,45 @@ button { cursor: pointer; }
   font-size: var(--block-font-size) !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif !important;
 }
+
+/* v0.3.7.2 教學大積木：24px 字級由 renderer 同步撐大積木本體。 */
+.blocklyHtmlInput {
+  font-size: 22px !important;
+  min-height: 34px !important;
+  padding: 4px 8px !important;
+  line-height: 1.25 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif !important;
+}
+.blocklyDropDownDiv,
+.blocklyDropDownDiv .goog-menuitem-content,
+.blocklyDropDownDiv .blocklyMenuItemContent,
+.blocklyWidgetDiv .goog-menuitem-content,
+.blocklyWidgetDiv .blocklyMenuItemContent {
+  font-size: 20px !important;
+  line-height: 1.55 !important;
+}
+.blocklyDropDownDiv .goog-menuitem,
+.blocklyWidgetDiv .goog-menuitem {
+  min-height: 38px !important;
+  padding: 5px 10px !important;
+}
+.blocklyFlyoutLabelText {
+  font-size: 18px !important;
+}
+
 .blocklyToolboxDiv {
   background: #f8faff !important;
   border-right: 1px solid #e2e8f3 !important;
 }
 .blocklyTreeRow {
-  height: 40px !important;
-  padding: 7px 10px !important;
-  margin: 5px 7px !important;
+  height: 52px !important;
+  padding: 10px 12px !important;
+  margin: 6px 8px !important;
   border-radius: 8px !important;
 }
 .blocklyTreeLabel {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif !important;
-  font-size: 14px !important;
+  font-size: 18px !important;
   font-weight: 700 !important;
 }
 .blocklyFlyoutBackground { fill: #f6f9ff !important; fill-opacity: 1 !important; }
@@ -1442,7 +1468,7 @@ body.gui-expanded .layout {
 .section-head p { font-size: .84rem; line-height: 1.45; }
 .btn-small { font-size: .82rem; }
 .mini-status { font-size: .78rem; }
-.blocklyTreeLabel { font-size: 16px !important; }
+.blocklyTreeLabel { font-size: 18px !important; }
 .run-status strong { font-size: .88rem; }
 .run-status p { font-size: .78rem; }
 .card-title { font-size: 1rem; }
@@ -1589,3 +1615,19 @@ body.gui-expanded .layout {
     width: min(520px, 72%);
   }
 }
+
+
+/* v0.3.7.4 Module tabs */
+.module-row.module-tab { cursor: pointer; user-select: none; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+.module-row.module-tab:hover { background: rgba(47,111,237,.07); }
+.module-row.module-tab:focus-visible { outline: 3px solid rgba(47,111,237,.28); outline-offset: 2px; }
+.module-row.module-tab.current { box-shadow: inset 3px 0 0 currentColor; }
+
+.workspace-module-tabs { display:flex; gap:8px; margin:0 0 8px; align-items:stretch; }
+.workspace-module-tab { flex:0 1 210px; min-height:54px; border:1px solid var(--line); border-radius:13px; background:#fff; color:var(--text); padding:8px 14px; display:flex; align-items:center; gap:9px; cursor:pointer; font:inherit; text-align:left; transition:background .16s ease,border-color .16s ease,box-shadow .16s ease; }
+.workspace-module-tab strong { font-size:.92rem; }
+.workspace-module-tab span { color:var(--muted); font-size:.78rem; }
+.workspace-module-tab:hover { background:#f7f9fd; }
+.workspace-module-tab.active { border-color:#8eacd8; background:#eef5ff; box-shadow:inset 0 -3px 0 #2f6fed; }
+.workspace-module-tab:focus-visible { outline:3px solid rgba(47,111,237,.25); outline-offset:2px; }
+@media (max-width:760px){ .workspace-module-tabs{flex-wrap:wrap}.workspace-module-tab{flex:1 1 160px;} }

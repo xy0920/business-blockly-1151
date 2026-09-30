@@ -2,13 +2,34 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "0.3.6.3-m1-student-publish";
-  const MODULE = "M1";
-  const DEFAULT_PROJECT_NAME = "商業流程整合示範";
+  const APP_VERSION = "0.3.7.5-m2-labeled-output-test";
+  const DEFAULT_MODULE = "M2";
+  const MODULE_CONFIG = {
+    M1: {
+      title: "M1 · 流程與順序",
+      shortTitle: "M1 流程與順序",
+      category: "M1 流程與順序",
+      tipTitle: "M1 本階段重點",
+      tipText: "從空白畫布重新練習流程順序：把顯示積木依照想要的執行順序接成一條主流程。",
+      pythonNote: "M1 不要求寫 Python；這裡只觀察積木順序與 print 的對應關係。",
+      flowNote: "M1 觀察程式執行順序：積木怎麼排，流程就怎麼走。"
+    },
+    M2: {
+      title: "M2 · 資料與處理",
+      shortTitle: "M2 資料與處理",
+      category: "M2 資料與處理",
+      tipTitle: "M2 本階段重點",
+      tipText: "處理一筆會員購物交易：先設定商品與會員資料，再完成結帳、庫存與會員點數的資料運算。",
+      pythonNote: "M2 不要求寫 Python；這裡用來觀察變數、指定、運算與 print 的對應關係。",
+      flowNote: "M2 觀察資料怎麼一路被處理：設定商品與會員資料 → 結帳計算 → 庫存更新 → 點數累積 → 顯示結果。"
+    }
+  };
+  let activeModule = DEFAULT_MODULE;
+  const DEFAULT_PROJECT_NAME = "小店營運助手";
   const LEGACY_PROFILE_KEY = "businessBlockly.profile.v1";
   const PROFILE_REGISTRY_KEY = "businessBlockly.profileRegistry.v2";
   const ACTIVE_PROFILE_KEY = "businessBlockly.activeProfile.v2";
-  const FONT_KEY = "businessBlockly.fontScale.student.v2";
+  const FONT_KEY = "businessBlockly.fontScale.student.v3";
   const DEV_UPLOAD_ENDPOINT_KEY = "businessBlockly.uploadEndpoint.dev.v1";
   const LAST_SUBMISSION_PREFIX = "businessBlockly.lastSubmission.v1";
   const CLOUD_CONFIG = window.BUSINESS_BLOCKLY_CONFIG || {};
@@ -18,11 +39,13 @@
 
 
   let workspace = null;
+  const moduleWorkspaceStates = { M1: null, M2: null };
   let activeProfile = null;
   let autosaveTimer = null;
   let isRunning = false;
   let openedProjectMeta = null;
   let uploadInProgress = false;
+  let isModuleSwitching = false;
   let projectState = {
     projectName: DEFAULT_PROJECT_NAME,
     eligible: true,
@@ -157,6 +180,11 @@
   }
 
   function getAutosaveKey() {
+    if (!activeProfile) return null;
+    return `businessBlockly.autosave.modules.v3.${activeProfile.studentKey}`;
+  }
+
+  function getLegacyAutosaveKey() {
     if (!activeProfile) return null;
     return `businessBlockly.autosave.m1.v2.${activeProfile.studentKey}`;
   }
@@ -308,6 +336,7 @@
     if (!restored) {
       $("autosaveStatus").textContent = "自動暫存：已啟用";
     }
+    applyModuleUi();
     restoreProgress();
     renderProjectState();
     updatePython();
@@ -344,7 +373,7 @@
 
   function getLastSubmissionKey() {
     if (!activeProfile) return null;
-    return `${LAST_SUBMISSION_PREFIX}.${activeProfile.studentKey}.${MODULE}`;
+    return `${LAST_SUBMISSION_PREFIX}.${activeProfile.studentKey}.${activeModule}`;
   }
 
   function refreshCloudUi() {
@@ -387,7 +416,7 @@
         : when.toLocaleString("zh-TW", { hour12: false });
       setCloudStatus(
         "success",
-        `${MODULE} 最近一次上傳成功`,
+        `${activeModule} 最近一次上傳成功`,
         `${displayTime} · 編號 ${String(last.submissionId || "").slice(0, 8)}`
       );
     } else {
@@ -518,7 +547,7 @@
 
       const notice = $("projectNotice");
       notice.textContent =
-        `☁️ 已送出 ${activeProfile.studentId} ${activeProfile.studentName} · ${MODULE}。請查看新開啟的上傳結果頁面。`;
+        `☁️ 已送出 ${activeProfile.studentId} ${activeProfile.studentName} · ${activeModule}。請查看新開啟的上傳結果頁面。`;
       notice.classList.remove("hidden");
     } catch (err) {
       console.error("Upload launch failed:", err);
@@ -555,6 +584,94 @@
         this.setNextStatement(true, null);
         this.setColour(214);
         this.setTooltip("M1：依照流程順序顯示一段可以自行修改的文字");
+      }
+    };
+
+    const M2_VARIABLE_OPTIONS = [
+      ["商品名稱", "productName"],
+      ["商品單價", "price"],
+      ["購買數量", "quantity"],
+      ["目前庫存", "currentStock"],
+      ["會員名稱", "memberName"],
+      ["原有點數", "currentPoints"],
+      ["商品小計", "subtotal"],
+      ["剩餘庫存", "remainingStock"],
+      ["本次獲得點數", "earnedPoints"],
+      ["累積點數", "totalPoints"]
+    ];
+
+    Blockly.Blocks["data_set_variable"] = {
+      init: function() {
+        this.appendValueInput("VALUE")
+          .appendField("設定")
+          .appendField(new Blockly.FieldDropdown(M2_VARIABLE_OPTIONS), "VAR")
+          .appendField("為");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(155);
+        this.setTooltip("M2：把資料存進指定的變數");
+      }
+    };
+
+    Blockly.Blocks["data_get_variable"] = {
+      init: function() {
+        this.appendDummyInput()
+          .appendField("取得")
+          .appendField(new Blockly.FieldDropdown(M2_VARIABLE_OPTIONS), "VAR");
+        this.setOutput(true, null);
+        this.setColour(155);
+        this.setTooltip("M2：取得變數目前保存的資料");
+      }
+    };
+
+    Blockly.Blocks["data_text_value"] = {
+      init: function() {
+        this.appendDummyInput()
+          .appendField("文字")
+          .appendField(new Blockly.FieldTextInput("紅茶"), "TEXT");
+        this.setOutput(true, "String");
+        this.setColour(185);
+        this.setTooltip("M2：文字資料，例如商品名稱");
+      }
+    };
+
+    Blockly.Blocks["data_number_value"] = {
+      init: function() {
+        this.appendDummyInput()
+          .appendField("數值")
+          .appendField(new Blockly.FieldNumber(0, null, null, 0.1), "NUM");
+        this.setOutput(true, "Number");
+        this.setColour(185);
+        this.setTooltip("M2：數值資料，可以是整數或小數");
+      }
+    };
+
+    Blockly.Blocks["data_arithmetic"] = {
+      init: function() {
+        this.appendValueInput("A").setCheck(null);
+        this.appendDummyInput()
+          .appendField(new Blockly.FieldDropdown([
+            ["＋", "ADD"],
+            ["－", "MINUS"],
+            ["×", "MULTIPLY"],
+            ["÷", "DIVIDE"]
+          ]), "OP");
+        this.appendValueInput("B").setCheck(null);
+        this.setInputsInline(true);
+        this.setOutput(true, "Number");
+        this.setColour(230);
+        this.setTooltip("M2：使用四則運算處理數值資料");
+      }
+    };
+
+    Blockly.Blocks["data_show_value"] = {
+      init: function() {
+        this.appendValueInput("VALUE")
+          .appendField("顯示資料");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(214);
+        this.setTooltip("M2：顯示資料；若接變數，會自動顯示變數名稱與目前值");
       }
     };
 
@@ -638,7 +755,7 @@
 
     // Legacy M1 blocks remain loadable so earlier project files do not immediately break.
     const legacy = {
-      shop_show_welcome: "歡迎使用小店結帳助手",
+      shop_show_welcome: "歡迎使用小店營運助手",
       shop_show_start: "開始結帳",
       shop_show_done: "結帳完成"
     };
@@ -655,44 +772,122 @@
     });
   }
 
+  function registerClassroomRenderer() {
+    const rendererName = "classroom_geras";
+
+    // v0.3.7.2：積木本體依 24px 教學字級重新計算尺寸，
+    // 不是靠 workspace zoom 把整張畫布放大。
+    class ClassroomConstantProvider extends Blockly.geras.ConstantProvider {
+      constructor() {
+        super();
+
+        // 字體與欄位
+        this.FIELD_TEXT_FONTSIZE = 24;
+        this.FIELD_TEXT_FONTWEIGHT = "normal";
+        this.FIELD_BORDER_RECT_HEIGHT = 34;
+        this.FIELD_BORDER_RECT_X_PADDING = 9;
+        this.FIELD_BORDER_RECT_Y_PADDING = 6;
+        this.FIELD_BORDER_RECT_RADIUS = 6;
+        this.FIELD_DROPDOWN_BORDER_RECT_HEIGHT = 34;
+        this.FIELD_DROPDOWN_SVG_ARROW_SIZE = 14;
+        this.FIELD_DROPDOWN_SVG_ARROW_PADDING = 8;
+
+        // 積木本體與行距
+        this.MIN_BLOCK_HEIGHT = 48;
+        this.MIN_BLOCK_WIDTH = 20;
+        this.SPACER_DEFAULT_HEIGHT = 24;
+        this.DUMMY_INPUT_MIN_HEIGHT = 36;
+        this.DUMMY_INPUT_SHADOW_MIN_HEIGHT = 36;
+        this.EMPTY_INLINE_INPUT_HEIGHT = 42;
+        this.EMPTY_INLINE_INPUT_PADDING = 22;
+        this.EXTERNAL_VALUE_INPUT_PADDING = 5;
+        this.SMALL_PADDING = 5;
+        this.MEDIUM_PADDING = 8;
+        this.MEDIUM_LARGE_PADDING = 12;
+        this.LARGE_PADDING = 15;
+        this.TALL_INPUT_FIELD_OFFSET_Y = 8;
+
+        // 接合處也同步放大，避免大字配小凹槽。
+        this.NOTCH_WIDTH = 22;
+        this.NOTCH_HEIGHT = 6;
+        this.NOTCH_OFFSET_LEFT = 22;
+        this.TAB_HEIGHT = 23;
+        this.TAB_WIDTH = 12;
+        this.TAB_OFFSET_FROM_TOP = 8;
+        this.TAB_VERTICAL_OVERLAP = 4;
+        this.CORNER_RADIUS = 10;
+        this.STATEMENT_INPUT_PADDING_LEFT = 30;
+        this.BETWEEN_STATEMENT_PADDING_Y = 6;
+        this.TOP_ROW_MIN_HEIGHT = 8;
+        this.TOP_ROW_PRECEDES_STATEMENT_MIN_HEIGHT = 14;
+        this.BOTTOM_ROW_MIN_HEIGHT = 8;
+        this.BOTTOM_ROW_AFTER_STATEMENT_MIN_HEIGHT = 14;
+      }
+    }
+
+    class ClassroomRenderer extends Blockly.geras.Renderer {
+      makeConstants_() {
+        return new ClassroomConstantProvider();
+      }
+    }
+
+    try { Blockly.blockRendering.unregister(rendererName); } catch (_) {}
+    Blockly.blockRendering.register(rendererName, ClassroomRenderer);
+    return rendererName;
+  }
+
+  function buildToolbox(moduleName) {
+    const contents = [
+      {
+        kind: "category",
+        name: "前導｜操作練習",
+        colour: "#6B7A90",
+        contents: [
+          { kind: "block", type: "flow_show_text", fields: { TEXT: "我的第一個顯示文字" } }
+        ]
+      },
+      {
+        kind: "category",
+        name: "M1 流程與順序",
+        colour: "#2F6FED",
+        contents: [{ kind: "block", type: "flow_show_text" }]
+      }
+    ];
+
+    if (moduleName === "M2") {
+      contents.push({
+        kind: "category",
+        name: "M2 資料與處理",
+        colour: "#3F8F72",
+        contents: [
+          { kind: "block", type: "data_set_variable" },
+          { kind: "block", type: "data_get_variable" },
+          { kind: "block", type: "data_text_value" },
+          { kind: "block", type: "data_number_value" },
+          { kind: "block", type: "data_arithmetic" },
+          { kind: "block", type: "data_show_value" }
+        ]
+      });
+    }
+
+    return { kind: "categoryToolbox", contents };
+  }
+
   function initBlockly() {
     defineBlocks();
-
-    const toolbox = {
-      kind: "categoryToolbox",
-      contents: [
-        {
-          kind: "category",
-          name: "前導｜操作練習",
-          colour: "#6B7A90",
-          contents: [
-            {
-              kind: "block",
-              type: "flow_show_text",
-              fields: { TEXT: "我的第一個顯示文字" }
-            }
-          ]
-        },
-        {
-          kind: "category",
-          name: "M1 流程與順序",
-          colour: "#2F6FED",
-          contents: [{ kind: "block", type: "flow_show_text" }]
-        },
-      ]
-    };
+    const classroomRenderer = registerClassroomRenderer();
 
     workspace = Blockly.inject("blocklyDiv", {
-      toolbox,
+      toolbox: buildToolbox(activeModule),
       media: "./vendor/blockly/media/",
-      renderer: "geras",
+      renderer: classroomRenderer,
       grid: { spacing: 22, length: 3, colour: "#d8dfeb", snap: true },
       zoom: {
         controls: true,
         wheel: true,
-        startScale: 0.88,
+        startScale: 1.0,
         maxScale: 1.35,
-        minScale: 0.45,
+        minScale: 0.55,
         scaleSpeed: 1.08
       },
       trashcan: true,
@@ -702,7 +897,7 @@
     setTimeout(() => {
       configurePersistentToolbox();
       bindToolboxFirstLevelAutoExpand();
-      selectToolboxCategory("M1 流程與順序");
+      selectToolboxCategory(MODULE_CONFIG[activeModule].category);
       Blockly.svgResize(workspace);
     }, 100);
   }
@@ -912,10 +1107,12 @@
 
   function bindWorkspaceEvents() {
     workspace.addChangeListener((event) => {
+      if (isModuleSwitching) return;
       if (event && event.isUiEvent) return;
       updatePython();
       updateFlowchart();
       updateWorkspaceHint();
+      captureActiveModuleState();
       scheduleAutosave();
     });
   }
@@ -954,6 +1151,81 @@
     return block && block.getInputTargetBlock ? block.getInputTargetBlock(name) : null;
   }
 
+  function m2VariableLabel(key) {
+    const labels = {
+      productName: "商品名稱",
+      price: "商品單價",
+      quantity: "購買數量",
+      currentStock: "目前庫存",
+      memberName: "會員名稱",
+      currentPoints: "原有點數",
+      subtotal: "商品小計",
+      remainingStock: "剩餘庫存",
+      earnedPoints: "本次獲得點數",
+      totalPoints: "累積點數"
+    };
+    return labels[key] || key || "變數";
+  }
+
+  function m2PythonVariable(key) {
+    const names = {
+      productName: "productName",
+      price: "price",
+      quantity: "quantity",
+      currentStock: "currentStock",
+      memberName: "memberName",
+      currentPoints: "originalPoints",
+      subtotal: "subtotal",
+      remainingStock: "remainingStock",
+      earnedPoints: "earnedPoints",
+      totalPoints: "totalPoints"
+    };
+    return names[key] || "value";
+  }
+
+  function m2DisplayLabel(valueBlock) {
+    if (valueBlock && valueBlock.type === "data_get_variable") {
+      return m2VariableLabel(valueBlock.getFieldValue("VAR"));
+    }
+    return "結果";
+  }
+
+  function m2ExpressionText(block) {
+    if (!block) return "□";
+    switch (block.type) {
+      case "data_get_variable":
+        return m2VariableLabel(block.getFieldValue("VAR"));
+      case "data_text_value":
+        return `「${block.getFieldValue("TEXT") || ""}」`;
+      case "data_number_value":
+        return String(block.getFieldValue("NUM") || 0);
+      case "data_arithmetic": {
+        const symbols = { ADD: "+", MINUS: "−", MULTIPLY: "×", DIVIDE: "÷" };
+        return `${m2ExpressionText(blockInput(block, "A"))} ${symbols[block.getFieldValue("OP")] || "?"} ${m2ExpressionText(blockInput(block, "B"))}`;
+      }
+      default:
+        return block.type;
+    }
+  }
+
+  function m2PythonExpression(block) {
+    if (!block) return "None";
+    switch (block.type) {
+      case "data_get_variable":
+        return m2PythonVariable(block.getFieldValue("VAR"));
+      case "data_text_value":
+        return pythonString(block.getFieldValue("TEXT") || "");
+      case "data_number_value":
+        return String(Number(block.getFieldValue("NUM") || 0));
+      case "data_arithmetic": {
+        const ops = { ADD: "+", MINUS: "-", MULTIPLY: "*", DIVIDE: "/" };
+        return `(${m2PythonExpression(blockInput(block, "A"))} ${ops[block.getFieldValue("OP")] || "+"} ${m2PythonExpression(blockInput(block, "B"))})`;
+      }
+      default:
+        return "None";
+    }
+  }
+
   function generatePythonChain(startBlock, indent = 0) {
     const lines = [];
     let block = startBlock;
@@ -965,7 +1237,7 @@
           lines.push(`${pad()}print(${pythonString(block.getFieldValue("TEXT"))})`);
           break;
         case "shop_show_welcome":
-          lines.push(`${pad()}print("歡迎使用小店結帳助手")`);
+          lines.push(`${pad()}print("歡迎使用小店營運助手")`);
           break;
         case "shop_show_start":
           lines.push(`${pad()}print("開始結帳")`);
@@ -973,6 +1245,15 @@
         case "shop_show_done":
           lines.push(`${pad()}print("結帳完成")`);
           break;
+        case "data_set_variable":
+          lines.push(`${pad()}${m2PythonVariable(block.getFieldValue("VAR"))} = ${m2PythonExpression(blockInput(block, "VALUE"))}`);
+          break;
+        case "data_show_value": {
+          const valueBlock = blockInput(block, "VALUE");
+          const label = m2DisplayLabel(valueBlock);
+          lines.push(`${pad()}print(${pythonString(`${label}：`)}, ${m2PythonExpression(valueBlock)})`);
+          break;
+        }
         case "data_reset_totals":
           lines.push(`${pad()}total_amount = 0`);
           lines.push(`${pad()}processed_count = 0`);
@@ -1034,7 +1315,7 @@
           lines.push(`print(${pythonString(block.getFieldValue("TEXT"))})`);
           break;
         case "shop_show_welcome":
-          lines.push('print("歡迎使用小店結帳助手")');
+          lines.push('print("歡迎使用小店營運助手")');
           break;
         case "shop_show_start":
           lines.push('print("開始結帳")');
@@ -1062,7 +1343,7 @@
 
     const lines = [];
     stacks.forEach((top, index) => {
-      const stackLines = generateM1PythonChain(top);
+      const stackLines = generatePythonChain(top);
       if (!stackLines.length) return;
       if (lines.length > 0) {
         lines.push("");
@@ -1073,7 +1354,7 @@
 
     $("pythonCode").textContent = lines.length
       ? lines.join("\n")
-      : "# M1 目前只顯示「顯示」積木對應的 print";
+      : "# 把 M2 積木拖到工作區後，這裡會顯示變數與運算的 Python 對照";
   }
 
   function flowchartEscape(value) {
@@ -1129,6 +1410,10 @@
         return "顯示：開始處理";
       case "shop_show_done":
         return "顯示：處理完成";
+      case "data_set_variable":
+        return `設定 ${m2VariableLabel(block.getFieldValue("VAR"))} = ${m2ExpressionText(blockInput(block, "VALUE"))}`;
+      case "data_show_value":
+        return `顯示：${m2ExpressionText(blockInput(block, "VALUE"))}`;
       case "data_reset_totals":
         return "初始化資料";
       case "data_calc_subtotal":
@@ -1291,6 +1576,7 @@
           block.type === "shop_show_welcome" ||
           block.type === "shop_show_start" ||
           block.type === "shop_show_done" ||
+          block.type === "data_show_value" ||
           block.type === "summary_show") {
         return ioNode(x, y, label);
       }
@@ -1580,7 +1866,7 @@
     const guiTitle = $("guiProjectName");
     if (guiTitle) guiTitle.textContent = displayName;
     const guiWindowTitle = $("guiWindowTitle");
-    if (guiWindowTitle) guiWindowTitle.textContent = `🧩 ${displayName} · Final`;
+    if (guiWindowTitle) guiWindowTitle.textContent = `🧩 ${displayName} · ${activeModule}`;
     const footerProject = $("footerProject");
     if (footerProject) footerProject.textContent = `專案：${displayName}`;
 
@@ -1672,6 +1958,37 @@
     return ctx.current;
   }
 
+  function m2Evaluate(block, ctx) {
+    if (!block) return null;
+    const vars = ctx.vars || (ctx.vars = {});
+    switch (block.type) {
+      case "data_get_variable":
+        return vars[block.getFieldValue("VAR")];
+      case "data_text_value":
+        return String(block.getFieldValue("TEXT") || "");
+      case "data_number_value":
+        return Number(block.getFieldValue("NUM") || 0);
+      case "data_arithmetic": {
+        const a = Number(m2Evaluate(blockInput(block, "A"), ctx));
+        const b = Number(m2Evaluate(blockInput(block, "B"), ctx));
+        const op = block.getFieldValue("OP");
+        if (!Number.isFinite(a) || !Number.isFinite(b)) {
+          throw new Error("運算積木左右兩邊都需要可計算的數值資料。");
+        }
+        if (op === "ADD") return a + b;
+        if (op === "MINUS") return a - b;
+        if (op === "MULTIPLY") return a * b;
+        if (op === "DIVIDE") {
+          if (b === 0) throw new Error("除數不能是 0。");
+          return a / b;
+        }
+        return 0;
+      }
+      default:
+        return null;
+    }
+  }
+
   async function executeChain(startBlock, ctx) {
     let block = startBlock;
     while (block) {
@@ -1683,7 +2000,7 @@
           appendGuiMessage(block.getFieldValue("TEXT") || "");
           break;
         case "shop_show_welcome":
-          appendGuiMessage("歡迎使用小店結帳助手");
+          appendGuiMessage("歡迎使用小店營運助手");
           break;
         case "shop_show_start":
           appendGuiMessage("開始結帳");
@@ -1691,6 +2008,23 @@
         case "shop_show_done":
           appendGuiMessage("結帳完成");
           break;
+        case "data_set_variable": {
+          const key = block.getFieldValue("VAR");
+          const valueBlock = blockInput(block, "VALUE");
+          if (!valueBlock) throw new Error(`「${m2VariableLabel(key)}」還沒有接上資料。`);
+          ctx.vars[key] = m2Evaluate(valueBlock, ctx);
+          if (ctx.assigned) ctx.assigned.add(key);
+          appendGuiMessage(`${m2VariableLabel(key)} = ${ctx.vars[key]}`);
+          break;
+        }
+        case "data_show_value": {
+          const valueBlock = blockInput(block, "VALUE");
+          if (!valueBlock) throw new Error("「顯示資料」還沒有接上要顯示的內容。");
+          const value = m2Evaluate(valueBlock, ctx);
+          const label = m2DisplayLabel(valueBlock);
+          appendGuiMessage(`${label}：${String(value == null ? "" : value)}`);
+          break;
+        }
         case "data_reset_totals":
           ctx.total = 0;
           ctx.count = 0;
@@ -1799,6 +2133,21 @@
     );
   }
 
+  function isM2TeachingBlock(block) {
+    return Boolean(block) && [
+      "flow_show_text",
+      "shop_show_welcome",
+      "shop_show_start",
+      "shop_show_done",
+      "data_set_variable",
+      "data_get_variable",
+      "data_text_value",
+      "data_number_value",
+      "data_arithmetic",
+      "data_show_value"
+    ].includes(block.type);
+  }
+
   async function runProgram() {
     if (isRunning || !workspace) return;
 
@@ -1806,12 +2155,41 @@
     const allBlocks = workspace.getAllBlocks(false).filter(b => !b.isShadow());
 
     if (!allBlocks.length) {
-      setRunStatus("warning", "還沒有積木", "先從 M1 積木盒拖出「顯示」積木。");
+      setRunStatus("warning", "還沒有積木", activeModule === "M1" ? "先從 M1 積木盒拖出顯示積木，重新組一條流程。" : "先從 M2 積木盒拖出「設定變數」積木，從商品與會員資料開始組流程。");
       return;
     }
 
     if (stacks.length !== 1) {
-      setRunStatus("warning", "目前有多條流程", "M1 先把顯示積木上下連成一條，再觀察執行順序。");
+      setRunStatus("warning", "目前有多條流程", activeModule === "M1"
+        ? "請把 M1 的顯示積木接成一條主流程，再執行測試。"
+        : "請把 M2 的設定、運算與顯示積木接成一條主流程，再執行測試。");
+      return;
+    }
+
+    if (activeModule === "M1") {
+      const m1Only = allBlocks.every(isM1DisplayBlock);
+      if (!m1Only) {
+        setRunStatus("warning", "M1 只使用流程積木", "請切回 M2 再使用資料與運算積木。");
+        return;
+      }
+
+      isRunning = true;
+      $("runProgramBtn").disabled = true;
+      clearGuiMessages();
+      setRunStatus("neutral", "執行中…", "正在依照 M1 積木由上往下執行。");
+      const ctx = { records: [], vars: {}, assigned: new Set(), total: 0, count: 0, discount: 0, finalAmount: 0 };
+      try {
+        await executeChain(stacks[0], ctx);
+        setRunStatus("success", "M1 流程完成！", "積木已依照由上到下的順序執行。切換到 M2 時，會進入另一張獨立畫布。");
+        markM1Complete();
+      } catch (err) {
+        console.error(err);
+        setRunStatus("error", "執行發生錯誤", err && err.message ? err.message : "請檢查積木結構。");
+      } finally {
+        isRunning = false;
+        $("runProgramBtn").disabled = false;
+        scheduleAutosave(true);
+      }
       return;
     }
 
@@ -1828,31 +2206,55 @@
       total: 0,
       count: 0,
       discount: 0,
-      finalAmount: 0
+      finalAmount: 0,
+      vars: {
+        productName: "",
+        price: 0,
+        quantity: 0,
+        currentStock: 0,
+        memberName: "",
+        currentPoints: 0,
+        subtotal: 0,
+        remainingStock: 0,
+        earnedPoints: 0,
+        totalPoints: 0
+      },
+      assigned: new Set()
     };
 
     try {
       await executeChain(stacks[0], ctx);
 
-      const m1Only = allBlocks.every(isM1DisplayBlock);
-      if (m1Only && allBlocks.length >= 3) {
-        setRunStatus(
-          "success",
-          "M1 執行成功！",
-          "積木會依照連接順序由上往下執行；可以交換順序後再試一次。"
-        );
-        markM1Complete();
-      } else if (m1Only) {
-        setRunStatus(
-          "success",
-          "流程已成功執行",
-          "目前積木較少；再加入幾個「顯示」積木，就更容易觀察循序。"
-        );
+      const m2Only = allBlocks.every(isM2TeachingBlock);
+      if (m2Only) {
+        const vars = ctx.vars || {};
+        const assigned = ctx.assigned || new Set();
+        const requiredInputs = ["productName", "price", "quantity", "currentStock", "memberName", "currentPoints"];
+        const requiredResults = ["subtotal", "remainingStock", "earnedPoints", "totalPoints"];
+        const taskComplete = requiredInputs.every(key => assigned.has(key)) &&
+          requiredResults.every(key => assigned.has(key) && Number.isFinite(Number(vars[key])));
+        if (taskComplete) {
+          setRunStatus(
+            "success",
+            "M2 會員購物交易完成！",
+            `會員：${vars.memberName || "—"}｜商品小計：${vars.subtotal}｜剩餘庫存：${vars.remainingStock}｜本次獲得點數：${vars.earnedPoints}｜累積點數：${vars.totalPoints}`
+          );
+          markM2Complete();
+        } else {
+          const done = requiredResults.filter(key => assigned.has(key)).map(m2VariableLabel);
+          setRunStatus(
+            "success",
+            "M2 程式已成功執行",
+            done.length
+              ? `目前已完成：${done.join("、")}。再把結帳、庫存與會員點數三段資料處理串完整。`
+              : "資料已依照積木順序處理；接著完成商品、庫存與會員點數的計算。"
+          );
+        }
       } else {
         setRunStatus(
           "warning",
           "程式可以執行",
-          "目前工作區包含後續 Module 的積木；M1 先專注在「顯示」與循序即可。"
+          "目前工作區包含尚未開放的後續 Module 積木；M2 先專注在資料、變數、運算與輸出。"
         );
       }
     } catch (err) {
@@ -1993,6 +2395,83 @@
     }, 80);
   }
 
+  function captureActiveModuleState() {
+    if (!workspace || !activeModule) return;
+    moduleWorkspaceStates[activeModule] = Blockly.serialization.workspaces.save(workspace);
+  }
+
+  function validModuleName(value) {
+    return value === "M1" || value === "M2" ? value : DEFAULT_MODULE;
+  }
+
+  function applyModuleUi() {
+    const cfg = MODULE_CONFIG[activeModule] || MODULE_CONFIG[DEFAULT_MODULE];
+    document.title = `商業軟體 Blockly｜${cfg.title}`;
+    document.querySelectorAll("[data-module-context]").forEach(el => { el.textContent = cfg.title; });
+    const tipTitle = $("moduleTipTitle");
+    const tipText = $("moduleTipText");
+    if (tipTitle) tipTitle.textContent = cfg.tipTitle;
+    if (tipText) tipText.textContent = cfg.tipText;
+    const pythonNote = $("pythonModuleNote");
+    const flowNote = $("flowchartModuleNote");
+    if (pythonNote) pythonNote.textContent = cfg.pythonNote;
+    if (flowNote) flowNote.textContent = cfg.flowNote;
+    if ($("guiWindowTitle")) $("guiWindowTitle").textContent = `🧩 ${currentProjectName()} · ${activeModule}`;
+    [["moduleTabM1", "M1"], ["moduleTabM2", "M2"]].forEach(([id, moduleName]) => {
+      const btn = $(id);
+      if (!btn) return;
+      const selected = moduleName === activeModule;
+      btn.classList.toggle("active", selected);
+      btn.setAttribute("aria-selected", selected ? "true" : "false");
+    });
+    restoreProgress();
+  }
+
+  function loadModuleWorkspace(moduleName) {
+    if (!workspace) return;
+    const state = moduleWorkspaceStates[moduleName];
+    isModuleSwitching = true;
+    try {
+      if (Blockly.Events && typeof Blockly.Events.disable === "function") Blockly.Events.disable();
+      workspace.clear();
+      if (state) {
+        try { Blockly.serialization.workspaces.load(state, workspace); }
+        catch (err) { console.warn(`Unable to restore ${moduleName} workspace`, err); }
+      }
+    } finally {
+      if (Blockly.Events && typeof Blockly.Events.enable === "function") Blockly.Events.enable();
+      isModuleSwitching = false;
+    }
+  }
+
+  function switchModule(moduleName, options = {}) {
+    const target = validModuleName(moduleName);
+    if (!workspace) { activeModule = target; return; }
+    if (target === activeModule && !options.force) return;
+
+    captureActiveModuleState();
+    activeModule = target;
+    workspace.updateToolbox(buildToolbox(activeModule));
+    configurePersistentToolbox();
+    loadModuleWorkspace(activeModule);
+    selectToolboxCategory(MODULE_CONFIG[activeModule].category);
+    applyModuleUi();
+    clearGuiMessages();
+    resetSummary();
+    updatePython();
+    updateFlowchart();
+    updateWorkspaceHint();
+    setRunStatus(
+      "neutral",
+      `${activeModule} 工作區`,
+      activeModule === "M1"
+        ? "這是獨立的 M1 畫布；請重新用已學過的流程積木完成練習。"
+        : "這是獨立的 M2 畫布；請從設定資料開始，重新完成一筆會員購物交易。"
+    );
+    if (!options.skipAutosave) scheduleAutosave(true);
+    setTimeout(() => { try { Blockly.svgResize(workspace); } catch (_) {} }, 30);
+  }
+
   function markM1Complete() {
     const key = getProgressKey();
     if (!key) return;
@@ -2004,28 +2483,41 @@
     restoreProgress();
   }
 
+  function markM2Complete() {
+    const key = getProgressKey();
+    if (!key) return;
+    const progress = safeParse(localStorage.getItem(key), {}) || {};
+    progress.M1 = true;
+    progress.M2 = true;
+    progress.m2CompletedAt = progress.m2CompletedAt || isoNow();
+    localStorage.setItem(key, JSON.stringify(progress));
+    restoreProgress();
+  }
+
   function restoreProgress() {
     const key = getProgressKey();
     const progress = key ? (safeParse(localStorage.getItem(key), {}) || {}) : {};
+    const row1 = $("moduleM1");
+    const row2 = $("moduleM2");
+    const state1 = $("m1State");
+    const state2 = $("m2State");
 
-    const row = $("moduleM1");
-    const state = $("m1State");
+    [row1, row2].forEach(row => { if (row) row.classList.remove("current", "complete"); });
 
-    if (progress.M1) {
-      if (row) {
-        row.classList.add("current");
-        row.classList.add("complete");
-      }
-      if (state) state.textContent = "✓ 已完成";
-      $("footerProgress").textContent = "進度：M1 已完成";
-    } else {
-      if (row) {
-        row.classList.add("current");
-        row.classList.remove("complete");
-      }
-      if (state) state.textContent = "進行中";
-      $("footerProgress").textContent = "進度：M1 · 流程與順序";
+    if (row1) {
+      if (progress.M1) row1.classList.add("complete");
+      if (activeModule === "M1") row1.classList.add("current");
+      row1.setAttribute("aria-selected", activeModule === "M1" ? "true" : "false");
     }
+    if (row2) {
+      if (progress.M2) row2.classList.add("complete");
+      if (activeModule === "M2") row2.classList.add("current");
+      row2.setAttribute("aria-selected", activeModule === "M2" ? "true" : "false");
+    }
+
+    if (state1) state1.textContent = progress.M1 ? "✓ 已完成" : (activeModule === "M1" ? "進行中" : "可練習");
+    if (state2) state2.textContent = progress.M2 ? "✓ 已完成" : (activeModule === "M2" ? "進行中" : "可練習");
+    $("footerProgress").textContent = `進度：${MODULE_CONFIG[activeModule].title}`;
   }
 
   function scheduleAutosave(immediate = false) {
@@ -2035,10 +2527,13 @@
     const doSave = () => {
       const key = getAutosaveKey();
       if (!key) return;
+      captureActiveModuleState();
       const payload = {
-        formatVersion: 2,
+        formatVersion: 3,
         appVersion: APP_VERSION,
-        module: MODULE,
+        module: activeModule,
+        activeModule,
+        workspaces: { M1: moduleWorkspaceStates.M1, M2: moduleWorkspaceStates.M2 },
         projectName: currentProjectName(),
         savedAt: isoNow(),
         student: activeProfile,
@@ -2056,28 +2551,56 @@
 
   function restoreAutosave() {
     if (!workspace || !activeProfile) return false;
-    workspace.clear();
 
     const key = getAutosaveKey();
-    const saved = key ? safeParse(localStorage.getItem(key), null) : null;
-    if (saved && saved.workspace) {
-      try {
-        Blockly.serialization.workspaces.load(saved.workspace, workspace);
-        restoreProjectData(saved.projectData, saved.projectName);
-        $("autosaveStatus").textContent = "自動暫存：已還原 Final";
-        return true;
-      } catch (err) {
-        console.warn("Final autosave restore failed:", err);
-      }
+    let saved = key ? safeParse(localStorage.getItem(key), null) : null;
+
+    if (saved && saved.workspaces) {
+      moduleWorkspaceStates.M1 = saved.workspaces.M1 || null;
+      moduleWorkspaceStates.M2 = saved.workspaces.M2 || null;
+      activeModule = validModuleName(saved.activeModule || saved.module || DEFAULT_MODULE);
+      workspace.updateToolbox(buildToolbox(activeModule));
+      loadModuleWorkspace(activeModule);
+      selectToolboxCategory(MODULE_CONFIG[activeModule].category);
+      restoreProjectData(saved.projectData, saved.projectName);
+      applyModuleUi();
+      $("autosaveStatus").textContent = `自動暫存：已還原 ${activeModule}`;
+      return true;
     }
+
+    // 相容 v0.3.7.3 以前：舊版只有一張工作區，視為 M2。
+    const legacyKey = getLegacyAutosaveKey();
+    saved = legacyKey ? safeParse(localStorage.getItem(legacyKey), null) : null;
+    if (saved && saved.workspace) {
+      moduleWorkspaceStates.M2 = saved.workspace;
+      activeModule = "M2";
+      workspace.updateToolbox(buildToolbox(activeModule));
+      loadModuleWorkspace(activeModule);
+      selectToolboxCategory(MODULE_CONFIG[activeModule].category);
+      restoreProjectData(saved.projectData, saved.projectName);
+      applyModuleUi();
+      $("autosaveStatus").textContent = "自動暫存：已還原舊版 M2";
+      return true;
+    }
+
+    workspace.clear();
+    moduleWorkspaceStates.M1 = null;
+    moduleWorkspaceStates.M2 = null;
+    activeModule = DEFAULT_MODULE;
+    workspace.updateToolbox(buildToolbox(activeModule));
+    applyModuleUi();
+    selectToolboxCategory(MODULE_CONFIG[activeModule].category);
     return false;
   }
 
   function buildProjectPayload() {
+    captureActiveModuleState();
     return {
-      formatVersion: 2,
+      formatVersion: 3,
       appVersion: APP_VERSION,
-      module: MODULE,
+      module: activeModule,
+      activeModule,
+      workspaces: { M1: moduleWorkspaceStates.M1, M2: moduleWorkspaceStates.M2 },
       projectName: currentProjectName(),
       savedAt: isoNow(),
       student: {
@@ -2110,7 +2633,7 @@
     const fileName = [
       sanitizeFilenamePart(activeProfile.studentId),
       sanitizeFilenamePart(activeProfile.studentName),
-      MODULE,
+      activeModule,
       timestampForFilename()
     ].join("_") + ".json";
 
@@ -2132,7 +2655,7 @@
     try {
       const text = await file.text();
       const payload = JSON.parse(text);
-      if (!payload || !payload.workspace) throw new Error("專案檔格式不正確");
+      if (!payload || (!payload.workspace && !payload.workspaces)) throw new Error("專案檔格式不正確");
 
       const sourceStudent = payload.student || {};
       const sourceId = normalizeStudentId(sourceStudent.studentId);
@@ -2140,8 +2663,19 @@
       const isSameStudentId = Boolean(sourceId && activeId && sourceId === activeId);
       const keyWasRestored = isSameStudentId && restoreStudentKeyFromOwnProject(sourceStudent);
 
-      workspace.clear();
-      Blockly.serialization.workspaces.load(payload.workspace, workspace);
+      if (payload.workspaces) {
+        moduleWorkspaceStates.M1 = payload.workspaces.M1 || null;
+        moduleWorkspaceStates.M2 = payload.workspaces.M2 || null;
+        activeModule = validModuleName(payload.activeModule || payload.module || DEFAULT_MODULE);
+      } else {
+        const sourceModule = validModuleName(payload.module || DEFAULT_MODULE);
+        moduleWorkspaceStates[sourceModule] = payload.workspace;
+        activeModule = sourceModule;
+      }
+      workspace.updateToolbox(buildToolbox(activeModule));
+      loadModuleWorkspace(activeModule);
+      selectToolboxCategory(MODULE_CONFIG[activeModule].category);
+      applyModuleUi();
       restoreProjectData(payload.projectData, payload.projectName);
 
       openedProjectMeta = {
@@ -2155,8 +2689,8 @@
       const sourceName = `${sourceStudent.studentId || ""} ${sourceStudent.studentName || ""}`.trim();
       if (isSameStudentId) {
         notice.textContent = keyWasRestored
-          ? `🔑 已開啟自己的 M1 專案，並恢復 studentKey（末 8 碼：${shortStudentKey(activeProfile.studentKey)}）。`
-          : `📂 已開啟自己的 M1 專案：${file.name}。`;
+          ? `🔑 已開啟自己的 ${activeModule} 專案，並恢復 studentKey（末 8 碼：${shortStudentKey(activeProfile.studentKey)}）。`
+          : `📂 已開啟自己的 ${activeModule} 專案：${file.name}。`;
       } else if (sourceId) {
         notice.textContent = `📂 已開啟「${sourceName || "其他同學"}」的專案內容作為起點；目前身分仍是 ${activeProfile.studentId} ${activeProfile.studentName}。`;
       } else {
@@ -2169,11 +2703,11 @@
       updatePython();
       updateWorkspaceHint();
       scheduleAutosave(true);
-      setRunStatus("neutral", "專案已開啟", "可以修改顯示文字與積木順序，再重新執行 M1。");
+      setRunStatus("neutral", "專案已開啟", `目前顯示 ${activeModule} 獨立工作區，可以繼續修改並重新執行。`);
       setTimeout(() => { try { workspace.zoomToFit(); } catch (_) {} }, 80);
     } catch (err) {
       console.error(err);
-      alert("無法開啟這個專案檔。請確認它是本系統儲存的 JSON 專案。\n\n舊版 M1 固定積木可相容，但其他未知積木可能無法載入。");
+      alert("無法開啟這個專案檔。請確認它是本系統儲存的 JSON 專案。\n\n舊版 M1 積木仍可相容，但其他未知積木可能無法載入。");
     } finally {
       $("projectFileInput").value = "";
     }
@@ -2181,7 +2715,7 @@
 
   function resetWorkspace() {
     if (!workspace) return;
-    const ok = confirm("要清空目前的 M1 積木重新開始嗎？\n\n如果需要保留，請先儲存專案。");
+    const ok = confirm(`要清空目前的 ${activeModule} 積木重新開始嗎？\n\n只會清空這個 Module 的獨立畫布；如果需要保留，請先儲存專案。`);
     if (!ok) return;
     workspace.clear();
     openedProjectMeta = null;
@@ -2189,7 +2723,7 @@
     clearGuiMessages();
     resetSummary();
     resetRecordResults();
-    setRunStatus("neutral", "工作區已清空", "可以從 M1 積木盒重新組合流程。");
+    setRunStatus("neutral", "工作區已清空", activeModule === "M1" ? "可以從 M1 積木盒重新練習流程順序。" : "可以從 M2 積木盒重新設定商品與會員資料、運算並顯示結果。");
     updatePython();
     updateFlowchart();
     updateWorkspaceHint();
@@ -2447,11 +2981,11 @@
   }
 
   function applyFontScale(scale) {
-    const clamped = Math.max(0.95, Math.min(1.3, scale));
+    const clamped = Math.max(0.9, Math.min(1.2, scale));
     document.documentElement.style.setProperty("--ui-scale", String(clamped));
     document.documentElement.style.setProperty(
       "--block-font-size",
-      `${Math.round(16 * clamped)}px`
+      `${Math.round(24 * clamped)}px`
     );
     $("fontScaleLabel").textContent = `${Math.round(clamped * 100)}%`;
     localStorage.setItem(FONT_KEY, String(clamped));
@@ -2476,6 +3010,18 @@
     $("continueIdentityBtn").addEventListener("click", continueIdentity);
     $("switchIdentityBtn").addEventListener("click", switchIdentity);
     $("switchUserTopBtn").addEventListener("click", switchIdentity);
+
+    [["moduleM1", "M1"], ["moduleM2", "M2"], ["moduleTabM1", "M1"], ["moduleTabM2", "M2"]].forEach(([id, moduleName]) => {
+      const control = $(id);
+      if (!control) return;
+      control.addEventListener("click", () => switchModule(moduleName));
+      control.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          switchModule(moduleName);
+        }
+      });
+    });
 
     $("studentIdInput").addEventListener("keydown", e => {
       if (e.key === "Enter") $("studentNameInput").focus();
@@ -2521,7 +3067,7 @@ $("toggleFlowchartBtn").addEventListener("click", toggleFlowchartPanel);
       projectState.projectName = e.target.value;
       const name = currentProjectName();
       $("guiProjectName").textContent = name;
-      $("guiWindowTitle").textContent = `🧩 ${name} · Final`;
+      $("guiWindowTitle").textContent = `🧩 ${name} · ${activeModule}`;
       $("footerProject").textContent = `專案：${name}`;
       updatePython();
       scheduleAutosave();

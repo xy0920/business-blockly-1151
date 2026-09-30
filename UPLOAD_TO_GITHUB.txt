@@ -4,15 +4,16 @@ GitHub Pages 上線檔案
 請把「這個資料夾裡面的內容」放到 GitHub repository 的根目錄，
 不要只上傳 ZIP，也不要再多包一層資料夾。
 
-GitHub Pages 設定：
-Settings → Pages
-Source：Deploy from a branch
-Branch：main
-Folder：/(root)
-Save
+Repository:
+xy0920/business-blockly-1151
 
-完成後網址通常為：
-https://你的GitHub帳號.github.io/Repository名稱/
+GitHub Pages:
+Source: Deploy from a branch
+Branch: main
+Folder: /(root)
+
+學生端：
+https://xy0920.github.io/business-blockly-1151/
 
 本包只保留學生端需要的靜態檔案：
 index.html
@@ -21,4 +22,4 @@ js/
 vendor/
 .nojekyll
 
-Apps Script 後端程式與老師測試文件未放入公開版。
+版本：v0.3.7.5

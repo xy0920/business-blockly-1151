@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>商業軟體 Blockly｜作業上傳查詢</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#17233c;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;min-height:100vh}.topbar{height:72px;background:#243b67;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;box-shadow:0 4px 18px rgba(31,49,83,.16)}.brand{display:flex;align-items:center;gap:12px}.brand-mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#fff;color:#243b67;font-size:22px;font-weight:900}.brand h1{margin:0;font-size:20px}.brand p{margin:2px 0 0;color:#ced8ec;font-size:13px}.back{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.34);border-radius:10px;padding:9px 13px;font-weight:700;font-size:14px}.wrap{max-width:920px;margin:42px auto;padding:0 20px 60px}.hero{text-align:center;margin-bottom:24px}.hero h2{font-size:30px;margin:0 0 8px}.hero p{margin:0;color:#697891;line-height:1.7}.card{background:#fff;border:1px solid #dfe6f1;border-radius:18px;box-shadow:0 14px 40px rgba(32,54,92,.08);padding:24px}.search-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}.field label{display:block;font-weight:800;margin:0 0 8px}.field input{width:100%;height:48px;border:1px solid #cfd8e7;border-radius:12px;padding:0 14px;font-size:17px;outline:none;text-transform:uppercase}.field input:focus{border-color:#6f97d9;box-shadow:0 0 0 3px rgba(70,116,191,.12)}button{height:48px;border:0;border-radius:12px;padding:0 22px;background:#2f6fed;color:#fff;font-size:16px;font-weight:800;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hint{margin:12px 2px 0;color:#7b879a;font-size:13px;line-height:1.6}.message{margin-top:18px;border-radius:12px;padding:13px 15px;font-size:14px;line-height:1.6;display:none}.message.show{display:block}.message.error{background:#fff0f0;color:#a33b3b;border:1px solid #efcdcd}.message.info{background:#eef5ff;color:#315b9b;border:1px solid #d5e3f8}.result{margin-top:22px;display:none}.result.show{display:block}.result-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}.result-head strong{font-size:17px}.checked{color:#7b879a;font-size:13px}.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.module-card{border:1px solid #dfe6f1;border-radius:15px;padding:18px;background:#fbfcfe}.module-card.uploaded{border-color:#bfe3d0;background:#f3fbf7}.module-card.missing{border-color:#dfe6f1;background:#fafbfc}.module-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.module-title{font-size:18px;font-weight:900}.module-sub{color:#728098;font-size:13px;margin-top:4px}.status{font-weight:900;border-radius:999px;padding:6px 10px;font-size:13px;white-space:nowrap}.uploaded .status{background:#dff3e8;color:#197448}.missing .status{background:#edf0f4;color:#657287}.detail{margin-top:15px;padding-top:14px;border-top:1px solid #e4e9f1;display:grid;gap:8px;font-size:14px}.row{display:flex;justify-content:space-between;gap:18px}.label{color:#7b879a}.value{font-weight:750;text-align:right}.footnote{margin-top:18px;border-radius:12px;background:#f7f9fc;color:#68758b;padding:14px 16px;font-size:13px;line-height:1.7}@media(max-width:680px){.topbar{height:auto;padding:15px 18px;gap:12px}.brand p{display:none}.search-row{grid-template-columns:1fr}.module-grid{grid-template-columns:1fr}.result-head{align-items:flex-start;flex-direction:column}.wrap{margin-top:28px}.hero h2{font-size:26px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">B</span><div><h1>商業軟體 Blockly</h1><p>1151 商業軟體與程式應用</p></div></div>
+  <a class="back" href="./">← 回到 Blockly</a>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <h2>作業上傳查詢</h2>
+    <p>輸入學號，確認目前 Module 的作業是否已成功寫入上傳紀錄。</p>
+  </section>
+  <section class="card">
+    <div class="search-row">
+      <div class="field">
+        <label for="studentId">學號</label>
+        <input id="studentId" autocomplete="off" inputmode="text" maxlength="20" placeholder="例如：11301174">
+      </div>
+      <button id="searchBtn" type="button">🔎 查詢上傳紀錄</button>
+    </div>
+    <div class="hint">目前先以學號查詢，不顯示姓名、studentKey、檔案路徑或作業內容。</div>
+    <div id="message" class="message" role="alert"></div>
+    <section id="result" class="result" aria-live="polite">
+      <div class="result-head">
+        <strong id="resultStudent">學號：—</strong>
+        <span id="checkedAt" class="checked"></span>
+      </div>
+      <div class="module-grid">
+        <article id="m1Card" class="module-card missing">
+          <div class="module-top"><div><div class="module-title">M1｜流程與順序</div><div class="module-sub">Module 1</div></div><span class="status">尚未查到</span></div>
+          <div class="detail"><div class="row"><span class="label">最後上傳</span><span class="value last-time">—</span></div><div class="row"><span class="label">上傳次數</span><span class="value count">0 次</span></div></div>
+        </article>
+        <article id="m2Card" class="module-card missing">
+          <div class="module-top"><div><div class="module-title">M2｜資料與處理</div><div class="module-sub">Module 2</div></div><span class="status">尚未查到</span></div>
+          <div class="detail"><div class="row"><span class="label">最後上傳</span><span class="value last-time">—</span></div><div class="row"><span class="label">上傳次數</span><span class="value count">0 次</span></div></div>
+        </article>
+      </div>
+      <div class="footnote">「尚未查到上傳紀錄」不等於老師已判定未繳交；請先確認學號輸入正確。若你剛完成上傳，可稍後重新查詢。</div>
+    </section>
+  </section>
+</main>
+<script src="./js/config.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const endpoint = String((window.BUSINESS_BLOCKLY_CONFIG || {}).uploadEndpoint || '').trim();
+  let pendingCleanup = null;
+
+  function showMessage(type, text) {
+    const el = $('message');
+    el.className = 'message show ' + type;
+    el.textContent = text;
+  }
+  function hideMessage() {
+    const el = $('message');
+    el.className = 'message';
+    el.textContent = '';
+  }
+  function setBusy(busy) {
+    $('searchBtn').disabled = busy;
+    $('searchBtn').textContent = busy ? '查詢中…' : '🔎 查詢上傳紀錄';
+  }
+  function renderModule(cardId, info) {
+    const card = $(cardId);
+    const uploaded = Boolean(info && info.uploaded);
+    card.classList.toggle('uploaded', uploaded);
+    card.classList.toggle('missing', !uploaded);
+    card.querySelector('.status').textContent = uploaded ? '✓ 已上傳' : '○ 尚未查到';
+    card.querySelector('.last-time').textContent = uploaded && info.lastServerTime ? info.lastServerTime : '—';
+    card.querySelector('.count').textContent = `${Number(info && info.count || 0)} 次`;
+  }
+  function renderResult(data) {
+    $('resultStudent').textContent = `學號：${data.studentId || '—'}`;
+    $('checkedAt').textContent = data.checkedAt ? `查詢時間：${data.checkedAt}` : '';
+    const modules = data.modules || {};
+    renderModule('m1Card', modules.M1);
+    renderModule('m2Card', modules.M2);
+    $('result').classList.add('show');
+  }
+  function cleanupPending() {
+    if (pendingCleanup) { try { pendingCleanup(); } catch (_) {} pendingCleanup = null; }
+  }
+  function jsonpQuery(studentId) {
+    return new Promise((resolve, reject) => {
+      if (!endpoint) return reject(new Error('查詢網址尚未設定。'));
+      cleanupPending();
+      const callback = `bbStatus_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const script = document.createElement('script');
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('查詢逾時，請稍後再試。'));
+      }, 15000);
+      function cleanup() {
+        clearTimeout(timer);
+        try { delete window[callback]; } catch (_) { window[callback] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+        if (pendingCleanup === cleanup) pendingCleanup = null;
+      }
+      pendingCleanup = cleanup;
+      window[callback] = data => { cleanup(); resolve(data); };
+      const url = new URL(endpoint);
+      url.searchParams.set('action', 'querySubmissionStatus');
+      url.searchParams.set('studentId', studentId);
+      url.searchParams.set('callback', callback);
+      url.searchParams.set('_', String(Date.now()));
+      script.onerror = () => { cleanup(); reject(new Error('無法連線到作業查詢服務。')); };
+      script.src = url.toString();
+      document.head.appendChild(script);
+    });
+  }
+  async function runSearch() {
+    hideMessage();
+    $('result').classList.remove('show');
+    const studentId = $('studentId').value.trim().toUpperCase();
+    $('studentId').value = studentId;
+    if (!/^[A-Z0-9_-]{4,20}$/.test(studentId)) {
+      showMessage('error', '請輸入正確的學號。');
+      $('studentId').focus();
+      return;
+    }
+    setBusy(true);
+    try {
+      const data = await jsonpQuery(studentId);
+      if (!data || !data.ok) throw new Error(data && data.message ? data.message : '查詢失敗。');
+      renderResult(data);
+      showMessage('info', '查詢完成。請核對各 Module 的上傳狀態。');
+    } catch (err) {
+      showMessage('error', err && err.message ? err.message : '查詢失敗，請稍後再試。');
+    } finally {
+      setBusy(false);
+    }
+  }
+  $('searchBtn').addEventListener('click', runSearch);
+  $('studentId').addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+})();
+</script>
+</body>
+</html>

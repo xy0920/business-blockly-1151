@@ -60,7 +60,7 @@
 <span id="fontScaleLabel">100%</span>
 <button aria-label="放大字體" class="icon-btn" id="fontUpBtn">A＋</button>
 </div>
-<div class="offline-badge" id="offlineBadge">✓ 離線核心已就緒</div>
+<div class="offline-badge" id="offlineBadge">✓ 離線核心已就緒</div><div class="m3-test-badge" title="M3 Part 1｜決策表與積木一起儲存上傳">M3 Part 1 · v0.3.8.4</div>
 <button class="btn btn-light" id="openProjectBtn">📂 開啟專案</button>
 <button class="btn btn-primary" id="saveProjectBtn">💾 儲存專案</button>
 <button class="btn btn-success" disabled="" id="uploadProjectBtn">📤 上傳作業</button>
@@ -77,7 +77,9 @@
 </div>
 <div aria-selected="false" class="module-row module-tab complete" id="moduleM1" role="tab" tabindex="0"><span class="module-dot">1</span><div><strong>M1</strong><span>流程與順序</span></div><em id="m1State">✓ 已完成</em></div>
 <div aria-selected="true" class="module-row module-tab current" id="moduleM2" role="tab" tabindex="0"><span class="module-dot">2</span><div><strong>M2</strong><span>資料與處理</span></div><em id="m2State">進行中</em></div>
-<div class="module-row locked"><span class="module-dot">3</span><div><strong>M3</strong><span>條件與判斷</span></div><em>尚未開放</em></div>
+<div class="module-row m3-parent"><span class="module-dot">3</span><div><strong>M3</strong><span>條件與判斷</span></div></div>
+<div aria-selected="false" class="module-row module-tab m3-sub" id="moduleM3P1" role="tab" tabindex="0"><span class="module-dot">1</span><div><strong>Part 1</strong><span>條件判斷</span></div><em id="m3p1State">可練習</em></div>
+<div aria-selected="false" aria-disabled="true" class="module-row module-tab m3-sub m3-p2-locked" id="moduleM3P2" role="tab" tabindex="-1" title="Part 2 尚未開放，請先完成 Part 1"><span class="module-dot">2</span><div><strong>Part 2</strong><span>多分支判斷</span></div><em id="m3p2State">🔒 尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">4</span><div><strong>M4</strong><span>商業規則</span></div><em>尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">5</span><div><strong>M5</strong><span>重複處理</span></div><em>尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">6</span><div><strong>M6</strong><span>整合成果</span></div><em>尚未開放</em></div>
@@ -92,19 +94,24 @@
 <nav aria-label="Module 切換" class="workspace-module-tabs" role="tablist">
 <button aria-selected="false" class="workspace-module-tab" id="moduleTabM1" role="tab" type="button"><strong>M1</strong><span>流程與順序</span></button>
 <button aria-selected="true" class="workspace-module-tab active" id="moduleTabM2" role="tab" type="button"><strong>M2</strong><span>資料與處理</span></button>
+<button aria-selected="false" class="workspace-module-tab" id="moduleTabM3P1" role="tab" type="button"><strong>M3 Part 1</strong><span>條件判斷</span></button>
+<button aria-selected="false" aria-disabled="true" class="workspace-module-tab m3-p2-locked" id="moduleTabM3P2" role="tab" type="button" disabled title="Part 2 尚未開放，請先完成 Part 1"><strong>M3 Part 2</strong><span>多分支</span></button>
 </nav>
 <section class="workspace-card card">
 <div class="section-head">
 <div>
-<div class="card-title">積木工作區</div>
+<div class="card-title" id="workspaceCardTitle">積木工作區</div>
 <p>畫布以積木為主；Python 與流程圖需要時再開啟，第二層積木抽屜收起後會真正把空間還給畫布。</p>
 </div>
-<div class="workspace-tools">
+<div class="workspace-tools" id="workspaceTools">
 <button class="btn btn-ghost btn-small" id="toggleFlyoutBtn" title="只收起第二層積木，不影響左側分類">◀ 收起積木</button><button aria-pressed="false" class="btn btn-light btn-small" id="togglePythonBtn" title="開啟／關閉 Python 對照" type="button">🐍 Python</button><button aria-pressed="false" class="btn btn-light btn-small" id="toggleFlowchartBtn" title="開啟／關閉由 Blockly 自動產生的流程圖" type="button">◇ 流程圖</button><span class="mini-status" id="workspaceHint">0 個積木</span>
 <button class="btn btn-ghost btn-small" id="resetWorkspaceBtn">↺ 清空重做</button>
 </div>
 </div>
-<div class="workspace-stage"><div class="blockly-host" id="blocklyDiv"></div><section class="python-card python-float is-hidden" id="pythonFloat">
+<div id="m3ModeTabs" class="m3-mode-tabs" hidden><button id="m3ModeDecision" type="button" class="active">▦ 決策表</button><button id="m3ModeBlocks" type="button">🧩 Blockly 畫布</button></div>
+<div id="m3DecisionPanel" class="m3-decision-panel" hidden></div>
+<div id="m3TaskBox" class="m3-task-box" hidden></div>
+<div class="workspace-stage" id="m3WorkspaceStage"><div class="blockly-host" id="blocklyDiv"></div><section class="python-card python-float is-hidden" id="pythonFloat">
 <div class="python-head python-float-head" id="pythonDragHandle">
 <div class="card-title">Python 對照</div>
 <span class="code-badge">只要看懂</span>
@@ -147,6 +154,7 @@
 <div class="card-title">GUI 模擬畫面</div>
 </div>
 <button aria-expanded="false" class="btn btn-light btn-small" id="guiToggleBtn" type="button" disabled>暫不開放</button></div>
+<div class="m3-gui-result" id="m3GuiResult"><div class="m3-gui-caption">執行結果圖像化（唯讀）</div><div id="m3GuiLines">執行 Blockly 後顯示資料。</div></div>
 <div class="mini-app final-app">
 <div class="mini-app-titlebar">
 <span id="guiWindowTitle">🧩 小店營運助手 · M2</span>
@@ -221,7 +229,7 @@
 <span class="status-dot"></span>
 <div>
 <strong>尚未連接後端</strong>
-<p>測試版先設定 Apps Script Web App，再使用「上傳作業」。</p>
+<p>請完成六題決策表及 Blockly 後，再一起上傳作業。</p>
 </div>
 </div>
 <button class="btn btn-ghost btn-wide" id="cloudSetupBtn">⚙ 設定上傳後端</button>

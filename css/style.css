@@ -1631,3 +1631,80 @@ body.gui-expanded .layout {
 .workspace-module-tab.active { border-color:#8eacd8; background:#eef5ff; box-shadow:inset 0 -3px 0 #2f6fed; }
 .workspace-module-tab:focus-visible { outline:3px solid rgba(47,111,237,.25); outline-offset:2px; }
 @media (max-width:760px){ .workspace-module-tabs{flex-wrap:wrap}.workspace-module-tab{flex:1 1 160px;} }
+
+/* M3 · v0.3.8.0 test additions */
+.m3-parent { background:#f1f7f9; margin-top:3px; }
+.module-row.m3-sub { margin-left:12px; padding-left:14px; border-left:3px solid #dde9f1; }
+.m3-sub .module-dot { font-size:12px; width:25px; height:25px; }
+.workspace-module-tabs { flex-wrap:wrap; }
+.workspace-module-tab { flex:1 1 108px; min-width:0; }
+.m3-mode-tabs{display:flex;gap:8px;padding:6px 8px 12px;}
+.m3-mode-tabs[hidden],.m3-decision-panel[hidden],.workspace-stage[hidden],.workspace-tools[hidden]{display:none !important;}
+.m3-mode-tabs button{border:1px solid #d8e3eb;background:#f8fafc;color:#526476;padding:12px 16px;border-radius:10px;font-weight:750;cursor:pointer;flex:1;font-size:14px;}
+.m3-mode-tabs button.active{background:#e8f4f5;border-color:#6aaeb6;color:#236973;}
+.m3-decision-panel{min-height:600px;padding:16px 20px 24px;display:flex;flex-direction:column;gap:14px;}
+.m3-section-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#243f57;flex-wrap:wrap;}
+.m3-section-heading strong{font-size:18px}.m3-section-heading span{font-size:12px;color:#728598}
+.m3-question-tabs{display:flex;gap:7px;overflow-x:auto;padding:3px 0 7px;}
+.m3-question-tabs button{flex:1 0 90px;border:1px solid #dee6ee;background:white;border-radius:8px;padding:9px 5px;cursor:pointer;font-size:12px;color:#53677a;}
+.m3-question-tabs button.active{background:#e5f3ed;border:2px solid #459978;color:#205d49;font-weight:750;}
+.m3-scenario,.m3-decision-rule,.m3-decision-test{padding:16px;border-radius:12px;border:1px solid #dfe7ef;background:#fff;display:flex;flex-direction:column;gap:12px;}
+.m3-scenario{background:#f2f8fb;}.m3-scenario>span{font-size:12px;color:#63839a;font-weight:700;}
+.m3-scenario h3,.m3-decision-rule h3,.m3-decision-test h3{margin:0;font-size:16px;color:#2b4258;}
+.m3-scenario p{margin:0;line-height:1.65;color:#334d60;}
+.m3-decision-panel label{font-size:14px;color:#2b4258;display:flex;flex-direction:column;gap:6px;}
+.m3-decision-panel input,.m3-decision-panel select{min-width:0;width:100%;max-width:100%;box-sizing:border-box;min-height:41px;padding:8px 10px;border:1px solid #cbd8e2;background:white;border-radius:8px;color:#263c50;font:inherit;}
+.m3-condition{display:flex;align-items:center;flex-wrap:wrap;gap:10px;}
+.m3-condition select{flex:0 1 210px;width:210px;max-width:210px;}.m3-outcome{display:flex;flex-direction:column;gap:8px;}
+.m3-outcome>div{border-radius:8px;padding:12px;background:#f3f7fa;color:#3b576e;}
+.m3-hint{font-size:12px;color:#6d7f90;line-height:1.55;margin:0;}
+.m3-test-buttons{display:flex;gap:8px;}.m3-history{overflow-x:auto;}
+.m3-history table{width:100%;border-collapse:collapse;font-size:12px;}
+.m3-history th,.m3-history td{padding:9px 7px;border-bottom:1px solid #e3eaf1;text-align:left;}
+#m3TestFeedback:not(:empty){padding:12px;border-radius:8px;background:#eaf7ef;color:#236344;font-size:13px;}
+.m3-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.m3-rule-row{border-radius:10px;background:#f7fafc;padding:14px;display:flex;flex-direction:column;gap:11px;border:1px solid #dfe6ee;}
+.m3-rule-title,.m3-rule-fields{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.m3-rule-title{justify-content:space-between;}.m3-rule-fields{flex-wrap:nowrap;}
+.m3-rule-fields select,.m3-rule-fields input{flex:1 1 130px;width:auto;}
+.m3-basis{flex:1 1 110px;min-width:90px;color:#3b536b;}
+.m3-else{padding:14px;border:1px dashed #b5c8d5;border-radius:10px;background:#fafcfe;}
+.m3-gui-result{display:none;padding:12px 4px 4px;}.gui-card.m3-mode:not(.is-collapsed) .m3-gui-result{display:block;}
+.m3-gui-caption{font-weight:800;color:#36566c;margin-bottom:12px;}
+.m3-gui-line{display:flex;justify-content:space-between;padding:12px 10px;gap:10px;border-bottom:1px solid #e3e9ee;font-size:14px;}
+.m3-gui-line strong{font-size:17px;color:#2e745b;}
+.gui-card.m3-mode .mini-app{display:none!important;}
+@media(max-width:780px){.m3-inputs{grid-template-columns:1fr}.m3-decision-panel{padding:10px}.m3-rule-fields{flex-wrap:wrap;}}
+
+.m3-inputs .m3-description{grid-column:1/-1;}
+
+.m3-task-box{margin:0 10px 12px;padding:14px 18px;border-radius:10px;background:#eef6fa;border:1px solid #c8e0ee;color:#2d5066;line-height:1.6;}
+.m3-task-box[hidden]{display:none!important;}.m3-task-box>strong{font-size:15px;}.m3-task-box p{margin:7px 0 0;font-size:13px;}
+
+.m3-test-badge{white-space:nowrap;color:#84541a;background:#fff2d7;border:1px solid #e8cd91;border-radius:9px;padding:7px 9px;font-weight:750;font-size:12px;}
+
+/* v0.3.8.2 · M3 Part 1 決策表說明與判斷分支測試 */
+.m3-instructions{padding:14px 16px;background:#f0f6ff;border:1px solid #cbdcf4;border-radius:11px;line-height:1.65;color:#2b4c69;font-size:13px}
+.m3-instructions strong{font-size:15px}.m3-instructions p{margin:5px 0 0}
+.m3-save-note{border-top:1px solid #d4e2f1;padding-top:9px;color:#255c50;font-weight:650}
+.m3-decision-panel .m3-branch-badge{display:inline-block;vertical-align:middle;padding:4px 8px;border-radius:7px;font-size:12px;font-weight:800;white-space:nowrap;margin:2px 4px 2px 0}
+.m3-branch-badge.if{background:#d8f1e3;color:#166c43;border:1px solid #8bd2aa}
+.m3-branch-badge.else{background:#fde7e7;color:#ad2936;border:1px solid #efb1b5}
+.m3-branch-badge.other{background:#e8edf8;color:#3a517e}
+.m3-not-tested{color:#8794a6}
+.m3-test-grid th,.m3-test-grid td{font-size:13px;padding:11px 8px}
+.m3-test-grid td:first-child{font-variant-numeric:tabular-nums}
+.m3-run-case{min-width:74px}
+.m3-test-history{font-size:12px;color:#50677f;border-top:1px solid #e1eaf3;padding-top:10px}
+.m3-test-history summary{cursor:pointer;font-weight:650}
+#m3TestFeedback.m3-feedback-review{background:#fff3e1;color:#87550b}
+#m3TestFeedback.m3-feedback-ok{background:#eaf7ef;color:#236344}
+/* Part 2：從左右兩種入口均鎖定，而不影響 Part 1 進度 */
+.module-row.m3-p2-locked,.workspace-module-tab.m3-p2-locked{opacity:.52;filter:grayscale(.25);cursor:not-allowed!important;background:#f1f3f5!important;box-shadow:none!important}
+.module-row.m3-p2-locked:hover,.workspace-module-tab.m3-p2-locked:hover{background:#f1f3f5!important}
+.module-row.m3-p2-locked em{color:#8a949f;font-size:11px}
+/* M3 流程圖小型版：整張圖適合窗寬，不必左右反覆拖動。M1、M2 不變。*/
+.flowchart-float.m3-flow-compact{width:min(585px,70%);max-height:660px}
+.flowchart-float.m3-flow-compact .flowchart-scroll{height:470px;overflow:auto}
+.flowchart-float.m3-flow-compact #flowchartSvg{display:block;width:100%;max-width:100%;min-width:0;min-height:0;height:auto}
+@media(max-width:780px){.flowchart-float.m3-flow-compact{width:calc(100% - 16px)}}

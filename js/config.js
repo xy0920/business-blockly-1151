@@ -1,4 +1,4 @@
-// 商業軟體 Blockly 115-1｜正式學生版 v0.3.8.4
+// 商業軟體 Blockly 115-1｜v0.3.9.4（M3 流程圖合流修正）
 // 已沿用 v0.3.7.5 的 Google Apps Script Web App /exec 網址。
 window.BUSINESS_BLOCKLY_CONFIG = Object.freeze({
   courseId: "1151",

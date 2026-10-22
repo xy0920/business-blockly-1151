@@ -2,10 +2,10 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "0.3.8.4-m3-part1-student-release";
-  // Part 2 將於第二週由教師開放；目前保留程式與資料結構，禁止操作。
-  const M3_PART2_OPEN = false;
-  const DEFAULT_MODULE = "M2";
+  const APP_VERSION = "0.3.9.4-m3-flowchart-merge-fix";
+  // M3 Part 1 與 Part 2 已開放；延續 v0.3.9.2 的教學與浮點數功能。
+  const M3_PART2_OPEN = true;
+  const DEFAULT_MODULE = "M3P1";
   const MODULE_CONFIG = {
     M1: {
       title: "M1 · 流程與順序",
@@ -33,7 +33,7 @@
     },
     M3P2: {
       title: "M3 · Part 2｜多分支判斷", shortTitle:"M3 Part 2", category:"M3 條件與判斷",
-      tipTitle:"M3 Part 2｜本階段重點", tipText:"自行設計多分支決策表，並完成老師指定的會員消費回饋分級 Blockly。",
+      tipTitle:"M3 Part 2｜本階段重點", tipText:"三題多分支決策表全部完成，再擇一實作批量優惠 Blockly（基礎版／進階版）。",
       pythonNote:"M3 Part 2：觀察 IF / ELIF / ELSE 的條件順序及對應 Python。",
       flowNote:"M3 Part 2：按照條件先後順序逐一判斷；符合後便不再檢查後續分支。"
     }
@@ -62,10 +62,30 @@
     {title:"商品缺貨", description:"商品庫存剛好為 0 件，顯示缺貨。", basis:"庫存數量", n:0, op:"==", yes:"顯示缺貨", no:"仍有庫存"},
     {title:"商品接單", description:"剩餘庫存不等於 0 件，才可以繼續接單。", basis:"剩餘庫存", n:0, op:"!=", yes:"可接單", no:"停止接單"}
   ];
-  const M3_OPERATORS = [["> 大於", ">"], ["≥ 大於等於", ">="], ["< 小於", "<"], ["≤ 小於等於", "<="], ["= 等於", "=="], ["≠ 不等於", "!="]];
+  // M3 Part 2：三個固定商業情境；結果與級距來自講義定案版，學生只需選擇判斷運算子。
+  const M3_PART2_QUESTIONS = [
+    {title:"商品庫存警示管理", difficulty:"簡單", basis:"可銷售庫存",
+      description:"某商店依商品可銷售庫存決定處理方式。", premise:"庫存為非負整數，10 件是商店自訂安全庫存門檻。",
+      ruleSummary:[["0 件","缺貨，停止銷售並通知補貨"],["1～9 件","低庫存，發出補貨提醒"],["10 件以上","庫存正常"]],
+      rules:[{n:0,op:"==",result:"缺貨，停止銷售並通知補貨"},{n:10,op:"<",result:"低庫存，發出補貨提醒"}],
+      otherwise:"庫存正常", tests:[0,1,9,10]},
+    {title:"包裹未取貨管理", difficulty:"中等", basis:"未取貨天數",
+      description:"包裹已送達指定門市，顧客尚未取貨；系統依經過的完整天數決定處理方式。",
+      premise:"只處理尚未取貨包裹；天數為非負整數。第 8 天起啟動退回流程，是課堂假設的商店規則。",
+      ruleSummary:[["0～3 天","正常待取貨"],["4～7 天","發出取貨提醒"],["超過 7 天","啟動退回流程"]],
+      rules:[{n:7,op:">",result:"啟動退回流程"},{n:4,op:">=",result:"發出取貨提醒"}],
+      otherwise:"正常待取貨", tests:[3,4,7,8]},
+    {title:"批量購買優惠級距", difficulty:"進階", basis:"購買件數",
+      description:"同一款商品每件 100 元，單筆購買件數越多，適用更優惠的數量折扣。",
+      premise:"件數為正整數；折扣不併用，商品單價固定 100 元。計算金額 = 件數 × 100 × 折扣係數。",
+      ruleSummary:[["1～4 件","原價（係數 1.00）"],["5～9 件","95 折（0.95）"],["10～19 件","9 折（0.90）"],["20 件以上","85 折（0.85）"]],
+      rules:[{n:20,op:">=",result:"0.85"},{n:10,op:">=",result:"0.90"},{n:5,op:">=",result:"0.95"}],
+      otherwise:"1.00", tests:[4,5,9,10,19,20], pricing:true}
+  ];
+  const M3_OPERATORS = [[">  大於", ">"], [">=  大於等於", ">="], ["<  小於", "<"], ["<=  小於等於", "<="], ["==  等於", "=="], ["!=  不等於", "!="]];
   const defaultM3Decision = () => ({
     M3P1: { selected:0, items:M3_QUESTIONS.map(q => ({op:"", testValue:String(q.n), prediction:"", history:[]})) },
-    M3P2: { topic:"", description:"", basis:"", rules:[{op:">=", threshold:"", result:""},{op:">=", threshold:"", result:""}], otherwise:"", testValue:"", prediction:"", history:[] }
+    M3P2: { selected:0, items:M3_PART2_QUESTIONS.map(q=>({ops:q.rules.map(()=>""),history:[]})) }
   });
   let m3Decision = defaultM3Decision();
   let m3VisibleTab = {M3P1:"decision",M3P2:"decision"};
@@ -425,7 +445,7 @@
       setCloudStatus(
         "neutral",
         "尚未連接後端",
-        "測試版先設定 Apps Script Web App，再使用「上傳作業」。"
+        "請確認 Apps Script Web App 後端設定，再使用「上傳作業」。"
       );
       return;
     }
@@ -631,10 +651,15 @@
 
     const M3_VARIABLE_OPTIONS = [
       ["運費", "shippingFee"], ["應付總金額", "finalPayment"], ["消費金額", "spendingAmount"],
-      ["回饋券金額", "voucherAmount"]
+      ["回饋券金額", "voucherAmount"], ["折扣係數", "discount"]
     ];
-    const visibleVariableOptions = () => activeModule.startsWith("M3")
-      ? M2_VARIABLE_OPTIONS.concat(M3_VARIABLE_OPTIONS) : M2_VARIABLE_OPTIONS;
+    const visibleVariableOptions = () => {
+      if (!activeModule.startsWith("M3")) return M2_VARIABLE_OPTIONS;
+      if (activeModule !== "M3P2") return M2_VARIABLE_OPTIONS.concat(M3_VARIABLE_OPTIONS);
+      // Part 2 文字與圖文講義一致；內部變數 ID 仍保持相容。
+      return M2_VARIABLE_OPTIONS.map(([label,key])=>[key==="quantity"?"購買件數":label,key])
+        .concat(M3_VARIABLE_OPTIONS.map(([label,key])=>[key==="finalPayment"?"應付金額":label,key]));
+    };
 
     Blockly.Blocks["data_set_variable"] = {
       init: function() {
@@ -679,6 +704,27 @@
         this.setOutput(true, "Number");
         this.setColour(185);
         this.setTooltip("M2：數值資料，可以是整數或小數");
+      }
+    };
+
+    // M3 Part 2: retain the literal decimal representation for teaching.
+    // FieldNumber with precision 0.1 would round 0.95, and even a finer
+    // FieldNumber drops trailing zeroes (0.90 -> 0.9, 1.00 -> 1).
+    // A validated text field preserves 0.90/0.95/1.00 in blocks, JSON, and
+    // Python while the interpreter still evaluates them as numeric values.
+    Blockly.Blocks["data_float_value"] = {
+      init: function() {
+        const decimalField = new Blockly.FieldTextInput("0.90", value => {
+          const text = String(value == null ? "" : value).trim();
+          if (!/^-?(?:\d+(?:\.\d{1,6})?|\.\d{1,6})$/.test(text)) return null;
+          return Number.isFinite(Number(text)) ? text : null;
+        });
+        this.appendDummyInput()
+          .appendField("數值（float）")
+          .appendField(decimalField, "FLOAT");
+        this.setOutput(true, "Number");
+        this.setColour(185);
+        this.setTooltip("M3 Part 2：輸入小數，例如 1.00、0.90、0.95；保留輸入格式並用數值運算。請以半形小數點輸入。");
       }
     };
 
@@ -941,7 +987,7 @@
       ];
       if (moduleName === "M3P2") {
         conditionBlocks.push({
-          kind:"block",type:"controls_if",extraState:{elseIfCount:2,hasElse:true}
+          kind:"block",type:"controls_if",extraState:{elseIfCount:1,hasElse:true}
         });
       }
 
@@ -952,6 +998,7 @@
         { kind: "block", type: "data_set_variable" },
         { kind: "block", type: "data_get_variable" },
         { kind: "block", type: "data_number_value" },
+        ...(moduleName === "M3P2" ? [{ kind: "block", type: "data_float_value", fields: { FLOAT: "0.90" } }] : []),
         { kind: "block", type: "data_arithmetic" },
         { kind: "block", type: "data_show_value" },
         { kind: "block", type: "data_text_value" },
@@ -1244,15 +1291,15 @@
     const labels = {
       productName: "商品名稱",
       price: "商品單價",
-      quantity: "購買數量",
+      quantity: activeModule === "M3P2" ? "購買件數" : "購買數量",
       currentStock: "目前庫存",
       memberName: "會員名稱",
       currentPoints: "原有點數",
       subtotal: "商品小計",
       remainingStock: "剩餘庫存",
       earnedPoints: "本次獲得點數",
-      totalPoints: "累積點數", shippingFee:"運費", finalPayment:"應付總金額",
-      spendingAmount:"消費金額", voucherAmount:"回饋券金額"
+      totalPoints: "累積點數", shippingFee:"運費", finalPayment:activeModule === "M3P2" ? "應付金額" : "應付總金額",
+      spendingAmount:"消費金額", voucherAmount:"回饋券金額", discount:"折扣係數"
     };
     return labels[key] || key || "變數";
   }
@@ -1260,7 +1307,7 @@
   function m2PythonVariable(key) {
     const names = {
       productName: "productName",
-      price: "price",
+      price: activeModule === "M3P2" ? "unitPrice" : "price",
       quantity: "quantity",
       currentStock: "currentStock",
       memberName: "memberName",
@@ -1269,7 +1316,7 @@
       remainingStock: "remainingStock",
       earnedPoints: "earnedPoints",
       totalPoints: "totalPoints", shippingFee:"shippingFee", finalPayment:"finalPayment",
-      spendingAmount:"spendingAmount", voucherAmount:"voucherAmount"
+      spendingAmount:"spendingAmount", voucherAmount:"voucherAmount", discount:"discount"
     };
     return names[key] || "value";
   }
@@ -1290,6 +1337,8 @@
         return `「${block.getFieldValue("TEXT") || ""}」`;
       case "data_number_value":
         return String(block.getFieldValue("NUM") || 0);
+      case "data_float_value":
+        return String(block.getFieldValue("FLOAT") || "0.90");
       case "m3_compare":
         return `${m2ExpressionText(blockInput(block,"A"))} ${block.getFieldValue("OP")} ${m2ExpressionText(blockInput(block,"B"))}`;
       case "data_arithmetic": {
@@ -1310,6 +1359,9 @@
         return pythonString(block.getFieldValue("TEXT") || "");
       case "data_number_value":
         return String(Number(block.getFieldValue("NUM") || 0));
+      case "data_float_value":
+        // Keep Python's decimal literal intact, including trailing zeroes.
+        return String(block.getFieldValue("FLOAT") || "0.90");
       case "m3_compare": {
         const a = m2PythonExpression(blockInput(block,"A"));
         const b = m2PythonExpression(blockInput(block,"B"));
@@ -1758,15 +1810,24 @@
     }
 
     function renderM3If(block, x, y, entry) {
-      // 單向 IF 的「否」直接跳到後續流程，無需多畫一格「不執行」。
+      // M3 多分支：成立後直接離開整組 IF / ELIF / ELSE。
+      // 共同合流線必須避開下方的 ELIF 與其動作方塊，不可穿過後續分支。
       const conditionCount = Array.from({length: 16}, (_,i)=>i).filter(i=>block.getInput("IF"+i)).length;
       const branchOffset = compactFlow ? 168 : 235;
       const leftX = x - branchOffset, rightX = x + branchOffset;
       const hasElse = Boolean(block.getInput("ELSE"));
-      const finalBottom = [];
-      let bypassFrom = null;
+      const trueExits = [];
+      let falseExit = null;
+      let falseBypass = false;
       let atY = y;
       let incoming = entry;
+
+      // 合流線不放箭頭：避免多支箭頭同時擠在同一個合流點。
+      function plainPath(points) {
+        const path = points.map((p,i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
+        elements.push(`<path d="${path}" fill="none" stroke="#65758f" stroke-width="2"></path>`);
+      }
+
       for (let i=0; i<conditionCount; i++) {
         const d = decisionNode(x, atY, `${m2ExpressionText(blockInput(block,"IF"+i))}？`);
         if (incoming) arrow(incoming[0],incoming[1],d.top[0],d.top[1]);
@@ -1775,7 +1836,7 @@
         const yes = yesBlock ? renderChain(yesBlock,leftX,branchY,null,false)
           : (()=>{const p=placeholderNode(leftX,branchY,"（無動作）");return {topY:p.top[1],bottom:p.bottom,bottomY:p.bottomY};})();
         orthogonal([[d.left[0],d.left[1]],[leftX,d.left[1]],[leftX,yes.topY]],"是",d.left[0]-29,d.left[1]-8);
-        finalBottom.push(yes.bottom);
+        trueExits.push(yes.bottom);
         const isLast = i===conditionCount-1;
         if (!isLast) {
           const nextY = Math.max(yes.bottomY + (compactFlow?30:38), d.bottomY + (compactFlow?43:60));
@@ -1787,25 +1848,40 @@
           const no = noBlock ? renderChain(noBlock,rightX,branchY,null,false)
             : (()=>{const p=placeholderNode(rightX,branchY,"（無動作）");return {topY:p.top[1],bottom:p.bottom,bottomY:p.bottomY};})();
           orthogonal([[d.right[0],d.right[1]],[rightX,d.right[1]],[rightX,no.topY]],"否",d.right[0]+10,d.right[1]-8);
-          finalBottom.push(no.bottom);
+          falseExit = no.bottom;
         } else {
-          // 沒有 ELSE 時，False 路徑略過 IF 內容，直接回到主流程。
-          bypassFrom = d.right;
-          finalBottom.push([rightX, d.right[1]]);
+          // 單向 IF 最後一個 False 不做任何動作，繞過分支直接合流。
+          falseExit = d.right;
+          falseBypass = true;
         }
         incoming=null;
       }
-      const mergeY = Math.max(...finalBottom.map(p=>p[1]),atY+DEC_H) + (compactFlow?34:55);
-      finalBottom.forEach((p,idx)=>{
-        // 最後一條無 ELSE 的 False 路徑從右側繞過，直接接回主流程。
-        const isBypass = !hasElse && idx===finalBottom.length-1;
-        if (isBypass && bypassFrom) {
-          orthogonal([[bypassFrom[0],bypassFrom[1]],[rightX,bypassFrom[1]],[rightX,mergeY],[x,mergeY]],
-            "否",bypassFrom[0]+11,bypassFrom[1]-8);
+
+      const maxBottom = Math.max(atY+DEC_H, ...trueExits.map(p=>p[1]), falseExit ? falseExit[1] : 0);
+      const mergeY = maxBottom + (compactFlow?46:64);
+      // 左側單一共用匯流線，固定在所有「是」分支方塊外側。
+      // 避免前一個分支的線垂直穿過下一個 ELIF 動作（舊版重疊原因）。
+      const busX = Math.max(12, leftX - Math.max(NODE_W, IO_W)/2 - 20);
+      const elbowGap = compactFlow ? 12 : 18;
+      const junctionYs = [];
+      for (const p of trueExits) {
+        const elbowY = p[1] + elbowGap;
+        // 每個 True 分支離開處理方塊後向左接入外側匯流線。
+        plainPath([[p[0],p[1]],[p[0],elbowY],[busX,elbowY]]);
+        junctionYs.push(elbowY);
+      }
+      if (junctionYs.length) {
+        // 只畫「一條」共用垂直線與回到主流程的水平線，避免重複線段。
+        plainPath([[busX,Math.min(...junctionYs)],[busX,mergeY],[x,mergeY]]);
+      }
+      if (falseExit) {
+        if (falseBypass) {
+          plainPath([[falseExit[0],falseExit[1]],[rightX,falseExit[1]],[rightX,mergeY],[x,mergeY]]);
+          elements.push(`<text x="${falseExit[0]+10}" y="${falseExit[1]-8}" font-size="13" font-weight="800" fill="#4b5d79">否</text>`);
         } else {
-          orthogonal([[p[0],p[1]],[p[0],mergeY],[x,mergeY]]);
+          plainPath([[falseExit[0],falseExit[1]],[falseExit[0],mergeY],[x,mergeY]]);
         }
-      });
+      }
       elements.push(`<circle cx="${x}" cy="${mergeY}" r="4" fill="#65758f"></circle>`);
       return {bottom:[x,mergeY],bottomY:mergeY,topY:y};
     }
@@ -2151,6 +2227,8 @@
         return String(block.getFieldValue("TEXT") || "");
       case "data_number_value":
         return Number(block.getFieldValue("NUM") || 0);
+      case "data_float_value":
+        return Number(block.getFieldValue("FLOAT") || 0);
       case "m3_compare": {
         const aBlock=blockInput(block,"A"), bBlock=blockInput(block,"B");
         if (!aBlock || !bBlock) throw new Error("比較積木的左右兩端都必須接上數值或變數。");
@@ -2442,7 +2520,7 @@
         subtotal: 0,
         remainingStock: 0,
         earnedPoints: 0,
-        totalPoints: 0, shippingFee:0, finalPayment:0, spendingAmount:0, voucherAmount:0
+        totalPoints: 0, shippingFee:0, finalPayment:0, spendingAmount:0, voucherAmount:0, discount:0
       },
       assigned: new Set(),
       displayOutputs: []
@@ -2453,7 +2531,7 @@
 
       if (activeModule.startsWith("M3")) {
         const assigned = ctx.assigned || new Set();
-        const summary = [...assigned].filter(k=>["shippingFee","finalPayment","voucherAmount","spendingAmount","subtotal"].includes(k))
+        const summary = [...assigned].filter(k=>["shippingFee","finalPayment","voucherAmount","spendingAmount","subtotal","discount"].includes(k))
           .map(k=>`${m2VariableLabel(k)}：${ctx.vars[k]}`).join("｜");
         setRunStatus("success", `${activeModule === "M3P1" ? "M3 Part 1" : "M3 Part 2"} 執行完成`,
           summary || "已按照學生排列的條件執行，請對照題目測試不同邊界值。");
@@ -2679,7 +2757,10 @@
       taskBox.hidden=!m3||m3VisibleTab[activeModule]!=="blocks";
       if(m3)taskBox.innerHTML=activeModule==="M3P1"
         ? `<strong>Part 1｜指定情境：小店滿額免運</strong><p>消費滿 1,000 元（含）免運費，未滿收取 60 元。請自行設定商品小計、判斷運費、計算應付總金額，並使用「顯示資料」積木呈現三個數值。</p><p>請測試：999、1000、1001 元。這裡不提供積木排列答案。</p>`
-        : `<strong>Part 2｜指定情境：會員消費回饋分級</strong><p>消費滿 3,000 元回饋券 100 元；滿 1,500 元回饋券 50 元；滿 500 元回饋券 10 元；未滿 500 元為 0 元。每筆消費只取得最高符合的單一級距。</p><p>請自行堆出 IF／ELIF／ELSE 並顯示消費金額和回饋券金額。請測試：499、500、1499、1500、2999、3000 元。</p>`;
+        : `<strong>Part 2｜Blockly 作業：批量購買優惠（二選一，同一張畫布）</strong>
+          <p><b>基礎版（老師帶領）：</b>購買 1～4 件原價（1.00）；5～9 件 95 折（0.95）；10 件以上 9 折（0.90）。設定購買數量與折扣係數，最後顯示這兩個數值。請測試 4、5、9、10、20 件。</p>
+          <p><b>進階版（自主挑戰）：</b>1～4 件原價；5～9 件 95 折；10～19 件 9 折；20 件以上 85 折。每件 100 元，增加商品小計與應付總金額的計算，顯示購買件數、小計、折扣係數、應付金額。請測試 4、5、9、10、19、20 件。</p>
+          <p>只需完成其中一版；不會自動產生積木。兩版本均須自行排列 IF／ELIF／ELSE 並執行驗證。</p>`;
     }
     $("m3ModeDecision").classList.toggle("active",m3&&m3VisibleTab[activeModule]==="decision");
     $("m3ModeBlocks").classList.toggle("active",m3&&m3VisibleTab[activeModule]==="blocks");
@@ -3324,11 +3405,12 @@
         selected: Math.max(0,Math.min(5,Number(p1.selected)||0)),
         items: p1.items.map((item,i)=>({op:String(item.op||""),testValue:String(item.testValue??M3_QUESTIONS[i].n),prediction:String(item.prediction||""),history:Array.isArray(item.history)?item.history.slice(-20):[]}))
       } : defaults.M3P1,
-      M3P2: p2&&Array.isArray(p2.rules) ? {
-        topic:String(p2.topic||""),description:String(p2.description||""),basis:String(p2.basis||""),
-        rules:p2.rules.slice(0,16).map(r=>({op:String(r.op||">="),threshold:String(r.threshold??""),result:String(r.result||"")})),
-        otherwise:String(p2.otherwise||""),testValue:String(p2.testValue??""),
-        prediction:String(p2.prediction||""),history:Array.isArray(p2.history)?p2.history.slice(-20):[]
+      M3P2: p2&&Array.isArray(p2.items)&&p2.items.length===M3_PART2_QUESTIONS.length ? {
+        selected:Math.max(0,Math.min(M3_PART2_QUESTIONS.length-1,Number(p2.selected)||0)),
+        items:p2.items.map((item,i)=>({
+          ops:M3_PART2_QUESTIONS[i].rules.map((_,j)=>M3_OPERATORS.some(v=>v[1]===String((item.ops||[])[j]))?String(item.ops[j]):""),
+          history:Array.isArray(item.history)?item.history.slice(-40):[]
+        }))
       } : defaults.M3P2
     };
   }
@@ -3360,6 +3442,26 @@
           `<td>${last?m3Escape(last.result):'—'}</td><td><button type="button" class="btn btn-light btn-small m3-run-case" data-m3-case="${v}" ${!answer.op?'disabled title="請先選擇比較運算子"':''}>測試</button></td></tr>`;
       }).join("")+`</tbody></table></div>`;
   }
+  function m3P2OperatorSignature(answer) { return answer.ops.join(" / "); }
+  function m3P2Result(question, value, opList) {
+    const at=question.rules.findIndex((r,i)=>compareValues(value,r.n,opList[i]));
+    const branch=at<0?"ELSE":at===0?"IF":`ELIF ${at}`;
+    const raw=at<0?question.otherwise:question.rules[at].result;
+    if (!question.pricing) return {branch,result:raw};
+    const discount=Number(raw),subtotal=value*100;
+    const total=Number((subtotal*discount).toFixed(2));
+    return {branch,result:`折扣係數 ${discount.toFixed(2)}｜商品小計 ${subtotal} 元｜應付金額 ${total} 元`};
+  }
+  function m3P2TestGrid(question,answer) {
+    const signature=m3P2OperatorSignature(answer);
+    const ready=answer.ops.every(op=>M3_OPERATORS.some(pair=>pair[1]===op));
+    return `<div class="m3-history"><table class="m3-test-grid"><thead><tr><th>測試值</th><th>實際分支</th><th>處理／計算結果</th><th>操作</th></tr></thead><tbody>`+
+      question.tests.map(v=>{
+        const last=[...answer.history].reverse().find(h=>Number(h.value)===v && h.op===signature);
+        return `<tr><td><strong>${v}</strong></td><td>${last?m3BranchBadge(last.branch):'<span class="m3-not-tested">尚未測試</span>'}</td>`+
+        `<td>${last?m3Escape(last.result):'—'}</td><td><button type="button" class="btn btn-light btn-small m3-run-case" data-m3-p2-case="${v}" ${ready?'':'disabled title="請先選擇每個條件的運算子"'}>測試</button></td></tr>`;
+      }).join("")+`</tbody></table></div>`;
+  }
   function renderM3Decision() {
     const panel=$("m3DecisionPanel");if(!panel||!activeModule.startsWith("M3"))return;
     const isP1=activeModule==="M3P1";
@@ -3383,28 +3485,24 @@
           <details class="m3-test-history"><summary>查看過去測試紀錄</summary>${m3DecisionHistory(a.history)}</details>
         </section>`;
     } else {
-      const d=m3Decision.M3P2;
-      panel.innerHTML=`<div class="m3-section-heading"><strong>自由設計多分支決策表</strong><span>與 Blockly 指定題目不同</span></div>
-        <section class="m3-scenario m3-inputs"><label>決策主題 <input data-m3-p2="topic" maxlength="80" value="${m3Escape(d.topic)}" placeholder="例如：庫存補貨等級"></label>
-        <label>判斷依據 <input data-m3-p2="basis" maxlength="60" value="${m3Escape(d.basis)}" placeholder="例如：剩餘庫存數量"></label>
-        <label class="m3-description">情境說明 <input data-m3-p2="description" maxlength="240" value="${m3Escape(d.description)}" placeholder="請說明你設計的商業或生活規則"></label></section>
-        <section class="m3-decision-rule"><h3>依順序設定 IF / ELIF 條件</h3>
-        ${d.rules.map((r,i)=>`<div class="m3-rule-row"><div class="m3-rule-title"><strong>${i===0?"IF":"ELIF "+i}</strong><span>
-          <button class="btn btn-ghost btn-small" data-m3-move="${i}" data-dir="up" ${i===0?"disabled":""}>↑</button>
-          <button class="btn btn-ghost btn-small" data-m3-move="${i}" data-dir="down" ${i===d.rules.length-1?"disabled":""}>↓</button>
-          <button class="btn btn-ghost btn-small" data-m3-delete="${i}" ${d.rules.length===1?"disabled":""}>刪除</button></span></div>
-          <div class="m3-rule-fields"><span class="m3-basis">${m3Escape(d.basis||"判斷依據")}</span>
-          <select data-m3-rule="${i}" data-field="op">${m3OpOptions(r.op)}</select>
-          <input type="number" data-m3-rule="${i}" data-field="threshold" value="${m3Escape(r.threshold)}" placeholder="比較數值"></div>
-          <label>符合條件時的處理結果 <input data-m3-rule="${i}" data-field="result" maxlength="120" value="${m3Escape(r.result)}" placeholder="例如：立即補貨"></label></div>`).join("")}
-        <button class="btn btn-light" type="button" data-m3-action="add">＋ 新增 ELIF 分支</button>
-        <label class="m3-else">ELSE｜其他情況的處理結果 <input maxlength="120" data-m3-p2="otherwise" value="${m3Escape(d.otherwise)}" placeholder="例如：正常庫存"></label>
-        <p class="m3-hint">必須有 IF、至少一個 ELIF 與 ELSE；可增加或調整判斷順序。只用一項數值判斷，不使用 AND／OR。</p></section>
-        <section class="m3-decision-test"><h3>決策測試</h3>
-          <label>測試數值 <input type="number" data-m3-p2="testValue" value="${m3Escape(d.testValue)}"></label>
-          <label>預測結果 <input data-m3-p2="prediction" maxlength="120" placeholder="先預測會執行哪個分支或結果" value="${m3Escape(d.prediction)}"></label>
-          <button class="btn btn-primary" type="button" data-m3-action="p2-test">執行決策表測試</button>
-          <div id="m3TestFeedback" role="status"></div>${m3DecisionHistory(d.history)}</section>`;
+      const d=m3Decision.M3P2, i=d.selected, q=M3_PART2_QUESTIONS[i], a=d.items[i];
+      panel.innerHTML=`
+        <div class="m3-section-heading"><strong>三題多分支決策表（全部必做）</strong><span>第 ${i+1} / 3 題・${m3Escape(q.difficulty)}</span></div>
+        <div class="m3-instructions"><strong>練習方式</strong><p>閱讀商業規則 → 依 IF／ELIF 的執行順序選擇比較運算子 → 按每筆建議值測試 → 核對處理結果。完成三題後，切換至 Blockly 畫布完成基礎版或進階版。</p>
+          <p class="m3-save-note">💾 三題決策表與 Blockly 會一起儲存為 M3P2；與 M3P1 分開上傳。</p></div>
+        <div class="m3-question-tabs">${M3_PART2_QUESTIONS.map((v,j)=>`<button type="button" data-m3-p2-question="${j}" class="${i===j?'active':''}">${j+1} ${m3Escape(v.title)}</button>`).join('')}</div>
+        <section class="m3-scenario"><span>指定商業情境｜${m3Escape(q.difficulty)}</span><h3>${m3Escape(q.title)}</h3><p>${m3Escape(q.description)}</p>
+          <p class="m3-hint">前提：${m3Escape(q.premise)}</p>
+          <div class="m3-history"><table><thead><tr><th>條件／級距</th><th>應採取的處理</th></tr></thead><tbody>${q.ruleSummary.map(r=>`<tr><td>${m3Escape(r[0])}</td><td>${m3Escape(r[1])}</td></tr>`).join('')}</tbody></table></div></section>
+        <section class="m3-decision-rule"><h3>① 依序完成 IF／ELIF 判斷</h3>
+          ${q.rules.map((rule,j)=>`<div class="m3-rule-row"><div class="m3-rule-title"><strong>${j===0?'IF':`ELIF ${j}`}</strong></div>
+          <div class="m3-condition"><strong>${m3Escape(q.basis)}</strong><select aria-label="第 ${j+1} 個條件的比較運算子" data-m3-p2-op="${j}">${m3OpOptions(a.ops[j])}</select><strong>${rule.n}</strong></div>
+          <div class="m3-outcome"><div>符合這個條件 → ${m3Escape(q.pricing?'折扣係數 '+rule.result:rule.result)}</div></div></div>`).join('')}
+          <div class="m3-else"><strong>ELSE｜前面條件都不符合</strong><p>${m3Escape(q.pricing?'折扣係數 '+q.otherwise:q.otherwise)}</p></div>
+          <p class="m3-hint">只有前面所有條件都不成立時，才會檢查下一個 ELIF；一旦符合就停止往下判斷。</p></section>
+        <section class="m3-decision-test"><h3>② 逐筆測試級距邊界</h3>
+          ${m3P2TestGrid(q,a)}<div id="m3TestFeedback" role="status"></div>
+          <details class="m3-test-history"><summary>查看本題過去測試紀錄</summary>${m3DecisionHistory(a.history)}</details></section>`;
     }
   }
 
@@ -3424,16 +3522,21 @@
       feedback.className=matchAnswer?"m3-feedback-ok":"m3-feedback-review";
       feedback.textContent=`測試 ${a.testValue} → ${branch}：${matched?q.yes:q.no}。${matchAnswer?"目前的運算子符合題目語意。":"請再檢查運算子是否符合原始題目，尤其是門檻值是否包含在內。"}`;
     } else {
-      const d=m3Decision.M3P2;
-      if(!d.topic.trim()||!d.basis.trim()||d.rules.length<2||!d.otherwise.trim()||d.testValue.trim()===""||!Number.isFinite(Number(d.testValue))||
-        d.rules.some(r=>r.threshold.trim()===""||!Number.isFinite(Number(r.threshold))||!r.op||!r.result.trim())) {
-        output.textContent="請填完整主題、判斷依據、至少兩個條件、ELSE 與有效測試值。";return;
-      }
-      const v=Number(d.testValue),at=d.rules.findIndex(r=>compareValues(v,Number(r.threshold),r.op));
-      const branch=at<0?"ELSE":at===0?"IF":`ELIF ${at}`;
-      const result=at<0?d.otherwise:d.rules[at].result;
-      d.history.push({value:d.testValue,prediction:d.prediction,branch,result});d.history=d.history.slice(-20);
-      renderM3Decision();$("m3TestFeedback").textContent=`執行 ${branch} → ${result}。請自行核對預測與判斷順序。`;
+      const d=m3Decision.M3P2,q=M3_PART2_QUESTIONS[d.selected],a=d.items[d.selected];
+      const ops=a.ops,ready=ops.every(op=>M3_OPERATORS.some(pair=>pair[1]===op));
+      if(!ready) {output.textContent="請先選擇所有 IF／ELIF 的比較運算子。";return;}
+      const v=Number(a.testValue);
+      if (!Number.isFinite(v)||!q.tests.includes(v)) {output.textContent="請使用題目提供的測試值。";return;}
+      const actual=m3P2Result(q,v,ops);
+      const expected=m3P2Result(q,v,q.rules.map(r=>r.op));
+      const correct=actual.result===expected.result;
+      const signature=m3P2OperatorSignature(a);
+      a.history.push({value:v,op:signature,branch:actual.branch,result:actual.result});
+      a.history=a.history.slice(-40);
+      renderM3Decision();
+      const feedback=$("m3TestFeedback");
+      feedback.className=correct?"m3-feedback-ok":"m3-feedback-review";
+      feedback.textContent=`測試 ${v} → ${actual.branch}：${actual.result}。${correct?'本筆結果符合題目規則。':'本筆結果與題目規則不符，請檢查條件與判斷先後。'}`;
     }
     scheduleAutosave(true);
   }
@@ -3447,15 +3550,17 @@
     }));
     const panel=$("m3DecisionPanel");
     panel.addEventListener("input",e=>{
-      const el=e.target, p1=el.dataset.m3P1,p2=el.dataset.m3P2,index=el.dataset.m3Rule;
+      const el=e.target,p1=el.dataset.m3P1;
       if(p1) m3Decision.M3P1.items[m3Decision.M3P1.selected][p1]=el.value;
-      else if(p2) m3Decision.M3P2[p2]=el.value;
-      else if(index!==undefined) m3Decision.M3P2.rules[Number(index)][el.dataset.field]=el.value;
       scheduleAutosave();
     });
     panel.addEventListener("change",e=>{
       if (e.target.dataset.m3P1==="op") renderM3Decision();
-      if(e.target.dataset.m3P1||e.target.dataset.m3P2||e.target.dataset.m3Rule!==undefined)scheduleAutosave(true);
+      if(e.target.dataset.m3P2Op!==undefined && activeModule==="M3P2"){
+        const d=m3Decision.M3P2;d.items[d.selected].ops[Number(e.target.dataset.m3P2Op)]=e.target.value;
+        renderM3Decision();
+      }
+      if(e.target.dataset.m3P1||e.target.dataset.m3P2Op!==undefined)scheduleAutosave(true);
     });
     panel.addEventListener("click",e=>{
       const btn=e.target.closest("button");if(!btn)return;
@@ -3464,14 +3569,13 @@
         m3Decision.M3P1.items[m3Decision.M3P1.selected].testValue=btn.dataset.m3Case;
         testM3Decision();return;
       }
-      const d=m3Decision.M3P2;
-      if(btn.dataset.m3Delete!==undefined){d.rules.splice(Number(btn.dataset.m3Delete),1);renderM3Decision();scheduleAutosave(true);return;}
-      if(btn.dataset.m3Move!==undefined){let i=Number(btn.dataset.m3Move),j=i+(btn.dataset.dir==="up"?-1:1);
-        if(j>=0&&j<d.rules.length){[d.rules[i],d.rules[j]]=[d.rules[j],d.rules[i]];renderM3Decision();scheduleAutosave(true);}return;}
-      if(btn.dataset.m3Action==="add"){
-        if(d.rules.length>=16){alert("最多 16 個條件，請先整理判斷規則。");return;}
-        d.rules.push({op:">=",threshold:"",result:""});renderM3Decision();scheduleAutosave(true);return;
-      }
+       const d=m3Decision.M3P2;
+       if(btn.dataset.m3P2Question!==undefined && activeModule==="M3P2"){
+         d.selected=Number(btn.dataset.m3P2Question);renderM3Decision();scheduleAutosave(true);return;
+       }
+       if(btn.dataset.m3P2Case!==undefined && activeModule==="M3P2"){
+         d.items[d.selected].testValue=btn.dataset.m3P2Case;testM3Decision();return;
+       }
       if(["p1-test","p2-test"].includes(btn.dataset.m3Action))testM3Decision();
     });
   }

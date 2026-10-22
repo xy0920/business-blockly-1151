@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>商業軟體 Blockly｜M2 資料與處理</title>
+<title>商業軟體 Blockly｜M3 條件與判斷</title>
 <link href="./css/style.css" rel="stylesheet"/>
 </head>
 <body>
@@ -15,7 +15,7 @@
 <span class="brand-mark">B</span>
 <div>
 <h1>商業軟體 Blockly</h1>
-<p data-module-context>M2 · 資料與處理</p>
+<p data-module-context>M3 · 條件與判斷</p>
 </div>
 </div>
 <section id="newIdentityPanel">
@@ -27,7 +27,7 @@
 <input autocomplete="off" class="text-input" id="studentNameInput" placeholder="請輸入姓名"/>
 <div class="form-error" id="identityError" role="alert"></div>
 <button class="btn btn-primary btn-wide" id="createIdentityBtn">開始使用</button>
-<p class="privacy-note">同一學號在這台電腦會沿用原本的 studentKey；自己的專案檔也能帶到另一台電腦。本版為學生正式使用版。</p>
+<p class="privacy-note">同一學號在這台電腦會沿用原本的 studentKey；自己的專案檔也能帶到另一台電腦。請確認學號與姓名正確後，再開始操作。</p>
 </section>
 <section class="hidden" id="returnIdentityPanel">
 <div class="identity-heading">歡迎回來</div>
@@ -49,7 +49,7 @@
 <div class="brand-mark small">B</div>
 <div>
 <h1>商業軟體 Blockly</h1>
-<p data-module-context>M2 · 資料與處理</p>
+<p data-module-context>M3 · 條件與判斷</p>
 </div>
 </div>
 <div class="topbar-actions">
@@ -60,7 +60,7 @@
 <span id="fontScaleLabel">100%</span>
 <button aria-label="放大字體" class="icon-btn" id="fontUpBtn">A＋</button>
 </div>
-<div class="offline-badge" id="offlineBadge">✓ 離線核心已就緒</div><div class="m3-test-badge" title="M3 Part 1｜決策表與積木一起儲存上傳">M3 Part 1 · v0.3.8.4</div>
+<div class="offline-badge" id="offlineBadge">✓ 離線核心已就緒</div><div class="m3-test-badge" title="M3 Part 1 與 Part 2 已開放">M3 Part 1／Part 2</div>
 <button class="btn btn-light" id="openProjectBtn">📂 開啟專案</button>
 <button class="btn btn-primary" id="saveProjectBtn">💾 儲存專案</button>
 <button class="btn btn-success" disabled="" id="uploadProjectBtn">📤 上傳作業</button>
@@ -76,18 +76,18 @@
 <div><strong>前導</strong><span>認識 Blockly</span></div><em>✓ 已完成</em>
 </div>
 <div aria-selected="false" class="module-row module-tab complete" id="moduleM1" role="tab" tabindex="0"><span class="module-dot">1</span><div><strong>M1</strong><span>流程與順序</span></div><em id="m1State">✓ 已完成</em></div>
-<div aria-selected="true" class="module-row module-tab current" id="moduleM2" role="tab" tabindex="0"><span class="module-dot">2</span><div><strong>M2</strong><span>資料與處理</span></div><em id="m2State">進行中</em></div>
+<div aria-selected="false" class="module-row module-tab" id="moduleM2" role="tab" tabindex="0"><span class="module-dot">2</span><div><strong>M2</strong><span>資料與處理</span></div><em id="m2State">可練習</em></div>
 <div class="module-row m3-parent"><span class="module-dot">3</span><div><strong>M3</strong><span>條件與判斷</span></div></div>
-<div aria-selected="false" class="module-row module-tab m3-sub" id="moduleM3P1" role="tab" tabindex="0"><span class="module-dot">1</span><div><strong>Part 1</strong><span>條件判斷</span></div><em id="m3p1State">可練習</em></div>
-<div aria-selected="false" aria-disabled="true" class="module-row module-tab m3-sub m3-p2-locked" id="moduleM3P2" role="tab" tabindex="-1" title="Part 2 尚未開放，請先完成 Part 1"><span class="module-dot">2</span><div><strong>Part 2</strong><span>多分支判斷</span></div><em id="m3p2State">🔒 尚未開放</em></div>
+<div aria-selected="true" class="module-row module-tab m3-sub current" id="moduleM3P1" role="tab" tabindex="0"><span class="module-dot">1</span><div><strong>Part 1</strong><span>條件判斷</span></div><em id="m3p1State">進行中</em></div>
+<div aria-selected="false" aria-disabled="false" class="module-row module-tab m3-sub" id="moduleM3P2" role="tab" tabindex="0"><span class="module-dot">2</span><div><strong>Part 2</strong><span>多分支判斷</span></div><em id="m3p2State">可練習</em></div>
 <div class="module-row locked"><span class="module-dot">4</span><div><strong>M4</strong><span>商業規則</span></div><em>尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">5</span><div><strong>M5</strong><span>重複處理</span></div><em>尚未開放</em></div>
 <div class="module-row locked"><span class="module-dot">6</span><div><strong>M6</strong><span>整合成果</span></div><em>尚未開放</em></div>
 
 </div>
 <div class="sidebar-tip">
-<strong id="moduleTipTitle">M2 本階段重點</strong>
-<span id="moduleTipText">處理一筆會員購物交易：先設定商品與會員資料，再完成結帳、庫存與會員點數的資料運算。</span>
+<strong id="moduleTipTitle">M3 Part 1｜本階段重點</strong>
+<span id="moduleTipText">完成六題比較運算子練習，再依滿額免運情境自行堆積木。</span>
 </div>
 </aside>
 <section class="center-column">
@@ -95,7 +95,7 @@
 <button aria-selected="false" class="workspace-module-tab" id="moduleTabM1" role="tab" type="button"><strong>M1</strong><span>流程與順序</span></button>
 <button aria-selected="true" class="workspace-module-tab active" id="moduleTabM2" role="tab" type="button"><strong>M2</strong><span>資料與處理</span></button>
 <button aria-selected="false" class="workspace-module-tab" id="moduleTabM3P1" role="tab" type="button"><strong>M3 Part 1</strong><span>條件判斷</span></button>
-<button aria-selected="false" aria-disabled="true" class="workspace-module-tab m3-p2-locked" id="moduleTabM3P2" role="tab" type="button" disabled title="Part 2 尚未開放，請先完成 Part 1"><strong>M3 Part 2</strong><span>多分支</span></button>
+<button aria-selected="false" aria-disabled="false" class="workspace-module-tab" id="moduleTabM3P2" role="tab" type="button"><strong>M3 Part 2</strong><span>多分支</span></button>
 </nav>
 <section class="workspace-card card">
 <div class="section-head">
@@ -243,7 +243,7 @@
 <span id="footerProject">專案：小店營運助手</span>
 <span id="footerIdentity">使用者：—</span>
 <span class="footer-spacer"></span>
-<span id="footerProgress">進度：M2 · 資料與處理</span>
+<span id="footerProgress">進度：M3 · Part 1｜條件判斷</span>
 </footer>
 <script src="./vendor/blockly/blockly.min.js"></script>
 <script src="./vendor/blockly/msg/zh-hant.js"></script>

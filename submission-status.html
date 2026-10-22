@@ -16,7 +16,7 @@
 <main class="wrap">
   <section class="hero">
     <h2>作業上傳查詢</h2>
-    <p>輸入學號，確認 M1、M2 與 M3 Part 1 的作業是否已成功寫入上傳紀錄。</p>
+    <p>輸入學號，確認 M1、M2 與 M3 Part 1、Part 2 的作業是否已成功寫入上傳紀錄。</p>
   </section>
   <section class="card">
     <div class="search-row">
@@ -44,6 +44,10 @@
         </article>
         <article id="m3p1Card" class="module-card missing">
           <div class="module-top"><div><div class="module-title">M3 Part 1｜條件判斷</div><div class="module-sub">決策表與 Blockly 同一份作業</div></div><span class="status">尚未查到</span></div>
+          <div class="detail"><div class="row"><span class="label">最後上傳</span><span class="value last-time">—</span></div><div class="row"><span class="label">上傳次數</span><span class="value count">0 次</span></div></div>
+        </article>
+        <article id="m3p2Card" class="module-card missing">
+          <div class="module-top"><div><div class="module-title">M3 Part 2｜多分支判斷</div><div class="module-sub">三題決策表與 Blockly 同一份作業</div></div><span class="status">尚未查到</span></div>
           <div class="detail"><div class="row"><span class="label">最後上傳</span><span class="value last-time">—</span></div><div class="row"><span class="label">上傳次數</span><span class="value count">0 次</span></div></div>
         </article>
       </div>
@@ -89,6 +93,7 @@
     renderModule('m1Card', modules.M1);
     renderModule('m2Card', modules.M2);
     renderModule('m3p1Card', modules.M3P1);
+    renderModule('m3p2Card', modules.M3P2);
     $('result').classList.add('show');
   }
   function cleanupPending() {
